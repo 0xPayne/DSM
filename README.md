@@ -3,15 +3,18 @@ CPSC 482 - Design Strucuture Matricies Optimization Project.
 
 
 ## Project Outline
+```text
 .
-├── .git/
-├── .gitignore
 ├── Makefile
 ├── LICENSE
 ├── README.md
-├── out/             # Output
-├── data/            # Sample data
-├── include/         # header files
-├── lib/             # External libraries (if needed)
-├── report/          # LaTex
-└── src/             # source code
+├── data/            # Sample data (Benchmark DSMs)
+├── include/         # Header files (.hpp)
+├── lib/             # External libraries
+├── out/             # Compiled binaries
+├── report/          # LaTeX source files
+└── src/             # Source code (.cpp)
+    ├── main.cpp
+    ├── matrix_loader.cpp
+    └── algorithms.cpp
+```
