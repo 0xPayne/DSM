@@ -1043,3 +1043,34 @@ dkms.conf
 *.uf2
 # Raspberry Pi Pico disassembler file
 *.dis
+
+build/
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.nav
+*.snm
+*.vrb
+
+# Backup files
+*~
+*.backup
+*.bak
+
+# Temporary files
+*.tmp
+
+
+# OS generated files
+.DS_Store
+Thumbs.db
