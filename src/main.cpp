@@ -8,7 +8,7 @@ int main() {
     // 1. Read in MM file with the parser.
     // 2. Analyze its stock metrics.
     // 3. Extract SCC's ..........
-    std::string filepath = "data/Tina_AskCal.mtx";
+    std::string filepath = "data/easy-example.mtx";
 
     std::cout << "Processing (CSR) " << filepath << "..." << std::endl;
 
