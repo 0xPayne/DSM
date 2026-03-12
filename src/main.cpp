@@ -1,5 +1,6 @@
 #include <iostream>
-#include "parser.hpp"
+#include "../include/parser.hpp"
+#include "../include/optimization_metrics.hpp"
 
 int main() {
     
@@ -12,6 +13,9 @@ int main() {
     std::cout << "Processing (CSR) " << filepath << "..." << std::endl;
 
     Sparse::CSCMatrix cscMatrix = SparseLib::IO::loadFromFile(filepath);
+
+    std::cout << "# FBM = " << SparseLib::Metrics::countFBM(cscMatrix) << std::endl;
+    std::cout << "Sum Distance of DBM = " << SparseLib::Metrics::fbmDiagonalDistance(cscMatrix) << std::endl;
     
 
     return 0;
