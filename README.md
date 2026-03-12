@@ -14,7 +14,4 @@ CPSC 482 - Design Strucuture Matricies Optimization Project.
 ├── out/             # Compiled binaries
 ├── report/          # LaTeX source files
 └── src/             # Source code (.cpp)
-    ├── main.cpp
-    ├── matrix_loader.cpp
-    └── algorithms.cpp
 ```
