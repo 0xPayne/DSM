@@ -1,5 +1,10 @@
 #include "../include/scc.hpp"
 
+#include <vector>
+#include <functional>
+#include <unordered_set>
+#include <functional>
+
 namespace SparseLib {
 namespace SCC {
 

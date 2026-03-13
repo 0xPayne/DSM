@@ -1,12 +1,6 @@
 #pragma once
 #include "sparse.hpp"
 #include <string>
-#include <vector>
-#include <utility>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <stdexcept>
 
 namespace SparseLib {
 namespace IO {

@@ -8,5 +8,5 @@ namespace Metrics {
     int countFBM(const Sparse::CSCMatrix& dsm);
 
     // Distance of FBM from the diagonal sum.
-    double fbmDiagonalDistance(const Sparse::CSCMatrix& dsm);
+    long long fbmDiagonalDistance(const Sparse::CSCMatrix& dsm);
 }}

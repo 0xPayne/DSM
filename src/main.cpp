@@ -1,30 +1,34 @@
-#include <iostream>
 #include "../include/parser.hpp"
 #include "../include/scc.hpp"
+#include "../include/ux.hpp"
 #include "../include/optimization_metrics.hpp"
 
-int main() {
-    
-    // To Do:
-    // 1. Read in MM file with the parser.
-    // 2. Analyze its stock metrics.
-    // 3. Extract SCC's 
-    // 4. Create condensation graph
-    // 5. Perform topologisation graph cal sort on conden
+#include <iostream>
 
-    std::string filepath = "data/HEP-th-new.mtx";
+int main(int argc, char* argv[]) {
+    try {
+        // 1. Select a matrix market file and parse it into compressed row/column.
+        std::string filepath = SparseLib::UX::selectFileFromDirectory(argv[0]);
 
-    std::cout << "Processing (CSR) " << filepath << "..." << std::endl;
+        std::cout << "\nProcessing (CSC) " << filepath << "..." << std::endl;
+        Sparse::CSCMatrix dsm = SparseLib::IO::loadFromFile(filepath);
+        
+        // 2. Analyze stock metrics: Number of Feedback marks, Sum of Distance of Feedback marks from the diagonal.
+        std::cout << "Number of Feedback Marks: " << SparseLib::Metrics::countFBM(dsm) << std::endl;
+        std::cout << "Sum of Distances of FBM's from Diagonal: " << SparseLib::Metrics::fbmDiagonalDistance(dsm) << std::endl;
 
-    Sparse::CSCMatrix cscMatrix = SparseLib::IO::loadFromFile(filepath);
+        // 3. Deduce the SCC's of the DSM.
+        std::vector<std::vector<int>> sccs = SparseLib::SCC::tarjanSCC(dsm);
+        std::cout << "Number of SCCs: " << sccs.size() << std::endl;
 
-    std::vector<std::vector<int>> sccs = SparseLib::SCC::tarjanSCC(cscMatrix);
+        // 4. Create condensation graph
+        Sparse::CSCMatrix condense = SparseLib::SCC::condensationGraph(dsm, sccs);
 
-    int numSccs = sccs.size();
+        // 5. Perform topological sort on condensation graph 
 
-    std::cout << "Number of SCCs: " << numSccs << std::endl;
-
-    Sparse::CSCMatrix condense = SparseLib::SCC::condensationGraph(cscMatrix, sccs);
-
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
     return 0;
 }
