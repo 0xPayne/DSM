@@ -164,6 +164,11 @@ std::vector<int> topologicalSort(const Sparse::CSCMatrix& matrix) {
             }
         }
     }
+
+    if (result.size() != num_nodes) {
+        throw std::runtime_error("Graph is cyclic; topological sort impossible.");
+    }
+
     return result;
 }
 
