@@ -54,5 +54,52 @@ std::vector<std::vector<int>> tarjanSCC(const Sparse::CSCMatrix& matrix) {
     }
     return sccs;
 }
+
+Sparse::CSCMatrix condensationGraph(const Sparse::CSCMatrix& matrix, const std::vector<std::vector<int>>& sccs) {
+    int n = matrix.cols;
+    int m = static_cast<int>(sccs.size());
+    std::vector<int> node_to_scc(n, -1);
+
+    // compute a node -> component_id mapping
+    for (int cid = 0; cid < m; cid++) {
+        for (int v : sccs[cid]) node_to_scc[v] = cid;
+    }
+
+    std::vector<std::unordered_set<int>> outs(m);
+
+    for (int u = 0; u < n; u++) {
+        int su = node_to_scc[u];
+        if (su < 0) continue;
+        for (int p = matrix.col_ptrs[u]; p < matrix.col_ptrs[u + 1]; p++) {
+            int v = matrix.row_indices[p];
+            int sv = node_to_scc[v];
+            if (sv >= 0 && sv != su) outs[su].insert(sv);
+        }
+    }
+
+    // build the CSC matrix of the condensation graph
+    Sparse::CSCMatrix condense(m, m, 0);
+    condense.col_ptrs.assign(m + 1, 0);
+    for (int i = 0; i < m; i++) {
+        condense.col_ptrs[i+1] = condense.col_ptrs[i] + static_cast<int>(outs[i].size());
+    }
+    condense.nnz = condense.col_ptrs[m];
+    condense.row_indices.assign(condense.nnz, -1);
+
+    int i = 0;
+    for (int col = 0; col < m; col++) {
+        // Sorting for deterministic output
+        std::vector<int> tmp(outs[col].begin(), outs[col].end());
+        std::sort(tmp.begin(), tmp.end());
+        for (int sv : tmp) {
+            condense.row_indices[i] = sv;
+            i++;
+        }
+    }
+
+    return condense;
+}
+
+
 }
 }

@@ -2,6 +2,8 @@
 #include "sparse.hpp"
 #include <vector>
 #include <functional>
+#include <iostream>
+#include <unordered_set>
 
 namespace SparseLib {
 
@@ -11,6 +13,7 @@ namespace SCC {
     // CSC matrix is interpreted as outgoing edges of vertex u are in column u
     std::vector<std::vector<int>> tarjanSCC(const Sparse::CSCMatrix& matrix);
 
-
+    // build the condensation graph of the Strongly Connected Components
+    Sparse::CSCMatrix condensationGraph(const Sparse::CSCMatrix& matrix, const std::vector<std::vector<int>>& sccs);
 }
 }
