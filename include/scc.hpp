@@ -13,4 +13,8 @@ namespace SCC {
     // Build the condensation graph of the Strongly Connected Components
     Sparse::CSCMatrix condensationGraph(const Sparse::CSCMatrix& matrix, const std::vector<std::vector<int>>& sccs);
 
+    // Perform topological sorting on the condensation graph
+    // returns a vector of indices of the original SCCs in topologically sorted order
+    std::vector<int> topologicalSort(const Sparse::CSCMatrix& matrix);
+
 }} 

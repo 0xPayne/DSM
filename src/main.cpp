@@ -24,6 +24,12 @@ int main(int argc, char* argv[]) {
         // 4. Create condensation graph
         Sparse::CSCMatrix condense = SparseLib::SCC::condensationGraph(dsm, sccs);
 
+        // 5. Sort condensation graph topologically
+        std::vector<int> topSort = SparseLib::SCC::topologicalSort(condense);
+        
+
+
+
         // 5. Perform topological sort on condensation graph 
 
     } catch (const std::exception& e) {
