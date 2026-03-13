@@ -1,5 +1,6 @@
 #include <iostream>
 #include "../include/parser.hpp"
+#include "../include/scc.hpp"
 #include "../include/optimization_metrics.hpp"
 
 int main() {
@@ -8,15 +9,15 @@ int main() {
     // 1. Read in MM file with the parser.
     // 2. Analyze its stock metrics.
     // 3. Extract SCC's ..........
-    std::string filepath = "data/easy-example.mtx";
+    std::string filepath = "data/Tina_AskCal.mtx";
 
     std::cout << "Processing (CSR) " << filepath << "..." << std::endl;
 
     Sparse::CSCMatrix cscMatrix = SparseLib::IO::loadFromFile(filepath);
 
-    std::cout << "# FBM = " << SparseLib::Metrics::countFBM(cscMatrix) << std::endl;
-    std::cout << "Sum Distance of DBM = " << SparseLib::Metrics::fbmDiagonalDistance(cscMatrix) << std::endl;
-    
+    std::vector<std::vector<int>> sccs = SparseLib::SCC::tarjanSCC(cscMatrix);
+
+    std::cout << "Number of SCCs: " << sccs.size() << std::endl;
 
     return 0;
 }

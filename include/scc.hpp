@@ -3,7 +3,7 @@
 #include <vector>
 #include <functional>
 
-namespace Sparselib {
+namespace SparseLib {
 
 namespace SCC {
 
