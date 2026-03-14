@@ -18,11 +18,13 @@ int main(int argc, char* argv[]) {
         std::cout << "Sum of Distances of FBM's from Diagonal: " << SparseLib::Metrics::fbmDiagonalDistance(dsm) << std::endl;
 
         // 3. Deduce the SCC's of the DSM.
-        std::vector<std::vector<int>> sccs = SparseLib::SCC::tarjanSCC(dsm);
-        std::cout << "Number of SCCs: " << sccs.size() << std::endl;
+        std::vector<std::vector<int>> sccs_t = SparseLib::SCC::tarjanSCC(dsm);
+	std::vector<std::vector<int>> sccs_k = SparseLib::SCC::kosarajuSCC(dsm); 
+        std::cout << "Number of SCCs (Tarjan): " << sccs_t.size() << std::endl;
+	std::cout << "Number of SCCs (Kosarju): " << sccs_k.size() << std::endl; 
 
         // 4. Create condensation graph
-        Sparse::CSCMatrix condense = SparseLib::SCC::condensationGraph(dsm, sccs);
+        Sparse::CSCMatrix condense = SparseLib::SCC::condensationGraph(dsm, sccs_t);
 
         // 5. Perform topological sort on condensation graph 
         std::vector<int> topSort = SparseLib::SCC::topologicalSort(condense);
