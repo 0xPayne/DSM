@@ -54,6 +54,19 @@ static void runInteractive(const std::string& execPath) {
     auto perm    = SparseLib::Permutation::buildPermutation(sccs_t, topo);
     auto permuted = SparseLib::Permutation::applyPermutation(dsm, perm);
 
+    // Write permuted matrix into project out/permuted/ directory for Python consumption
+    try {
+        fs::path base = fs::canonical(fs::path(execPath).parent_path() / "..");
+        fs::path outDir = base / "out" / "permuted";
+        fs::create_directories(outDir);
+        fs::path inPath(filepath);
+        fs::path outPath = outDir / (inPath.stem().string() + std::string("_permuted.mtx"));
+        SparseLib::IO::saveToFile(permuted, outPath.string());
+        std::cout << "Wrote permuted matrix to: " << outPath.string() << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Warning: failed to write permuted matrix: " << e.what() << "\n";
+    }
+
     // 7. Report before vs. after.
     int fbm_after = SparseLib::Metrics::countFBM(permuted);
     long long tfbd_after = SparseLib::Metrics::fbmDiagonalDistance(permuted);
@@ -116,6 +129,19 @@ static void runBenchmark(const std::string& execPath) {
             permuted = SparseLib::Permutation::applyPermutation(dsm, perm);
         });
         records.push_back({name, dsm.cols, dsm.nnz, "Permute", t5});
+
+        // Write permuted matrix into project out/permuted/ directory (bench mode)
+        try {
+            fs::path base = fs::canonical(fs::path(execPath).parent_path() / "..");
+            fs::path outDir = base / "out" / "permuted";
+            fs::create_directories(outDir);
+            fs::path inPath(filepath);
+            fs::path outPath = outDir / (inPath.stem().string() + std::string("_permuted.mtx"));
+            SparseLib::IO::saveToFile(permuted, outPath.string());
+            std::cout << "  Wrote permuted matrix to: " << outPath.string() << "\n";
+        } catch (const std::exception& e) {
+            std::cerr << "  Warning: failed to write permuted matrix: " << e.what() << "\n";
+        }
 
         // --- Quality metrics (before / after) ---
         int fbm_before = SparseLib::Metrics::countFBM(dsm);
