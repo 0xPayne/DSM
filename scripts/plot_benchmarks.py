@@ -39,8 +39,10 @@ COLORS = {
     "Tarjan":       "#2563eb",
     "Kosaraju":     "#dc2626",
     "Condensation": "#16a34a",
-    "FBM-Count":    "#9333ea",
-    "TFBD-Sum":     "#ea580c",
+    "TopoSort":     "#9333ea",
+    "Permute":      "#ea580c",
+    "FBM-Count":    "#0891b2",
+    "TFBD-Sum":     "#ca8a04",
 }
 
 def load_data(csv_path: str) -> pd.DataFrame:
