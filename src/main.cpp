@@ -5,6 +5,7 @@
 #include "../include/scc.hpp"
 #include "../include/ux.hpp"
 #include "../include/verification.hpp"
+#include "../include/tearing.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -76,8 +77,10 @@ static void runInteractive(const std::string &execPath) {
   // 5. Topological sort on condensation graph.
   auto topo = SparseLib::SCC::topologicalSort(condense);
 
+  auto torn_sccs = SparseLib::Tearing::tearAllSCCs(sccs_t, dsm);
+
   // 6. Build permutation and apply P^T A P.
-  auto perm = SparseLib::Permutation::buildPermutation(sccs_t, topo);
+  auto perm = SparseLib::Permutation::buildPermutation(torn_sccs, topo);
   auto permuted = SparseLib::Permutation::applyPermutation(dsm, perm);
   auto vr = SparseLib::Verify::verifyPermutation(dsm, permuted, perm);
 
@@ -154,8 +157,12 @@ static void runBenchmark(const std::string &execPath) {
         [&]() { topo = SparseLib::SCC::topologicalSort(condense); });
     records.push_back({name, dsm.cols, dsm.nnz, "TopoSort", t4});
 
+    std::vector<std::vector<int>> torn_sccs;
+    auto t_tear = SparseLib::Bench::measure([&]() {torn_sccs = SparseLib::Tearing::tearAllSCCs(sccs, dsm); });
+    records.push_back({name, dsm.cols, dsm.nnz, "Tearing", t_tear});
+
     // --- Time permutation application ---
-    auto perm = SparseLib::Permutation::buildPermutation(sccs, topo);
+    auto perm = SparseLib::Permutation::buildPermutation(torn_sccs, topo);
     Sparse::CSCMatrix permuted;
     auto t5 = SparseLib::Bench::measure([&]() {
       permuted = SparseLib::Permutation::applyPermutation(dsm, perm);
@@ -172,7 +179,7 @@ static void runBenchmark(const std::string &execPath) {
                 << "\n";
       continue; // skip metrics for a broken permutation
     }
-    std::cout << "  Verification assed.\n";
+    std::cout << "  Verification Passed.\n";
 
     // Write permuted matrix into project out/permuted/ directory (bench mode)
     try {
