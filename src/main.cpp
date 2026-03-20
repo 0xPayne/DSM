@@ -12,6 +12,30 @@
 
 namespace fs = std::filesystem;
 
+// Prototypes
+static std::vector<std::string> findMatrices(const std::string &execPath);
+static void runInteractive(const std::string &execPath);
+static void runBenchmark(const std::string &execPath);
+
+int main(int argc, char *argv[]) {
+  try {
+    bool bench = false;
+    for (int i = 1; i < argc; ++i)
+      if (std::string(argv[i]) == "--bench")
+        bench = true;
+
+    if (bench)
+      runBenchmark(argv[0]);
+    else
+      runInteractive(argv[0]);
+
+  } catch (const std::exception &e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return 1;
+  }
+  return 0;
+}
+
 // ---------------------------------------------------------------------------
 // Collect all .mtx files from the data/ directory
 // ---------------------------------------------------------------------------
@@ -202,22 +226,5 @@ static void runBenchmark(const std::string &execPath) {
   SparseLib::Bench::writeCSV(csvPath.string(), records);
 }
 
-// ---------------------------------------------------------------------------
-int main(int argc, char *argv[]) {
-  try {
-    bool bench = false;
-    for (int i = 1; i < argc; ++i)
-      if (std::string(argv[i]) == "--bench")
-        bench = true;
 
-    if (bench)
-      runBenchmark(argv[0]);
-    else
-      runInteractive(argv[0]);
 
-  } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
-    return 1;
-  }
-  return 0;
-}
