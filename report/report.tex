@@ -14,9 +14,22 @@
 \usepackage{graphicx}
 \usepackage[nottoc]{tocbibind}
 \usepackage{setspace}
+\usepackage[
+    backend=biber, 
+    style=ieee,
+    maxnames=1,
+    giveninits=true, 
+    doi=true,
+    isbn=false
+]{biblatex}
 \usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
 \usepackage{listings}
 \usepackage{caption}
+\usepackage{booktabs}
+
+\addbibresource{references.bib}
+
+
 
 % Theorem Environment Stuff
 \newtheorem{theorem}{Theorem}[section]
@@ -73,20 +86,37 @@
 	\vspace{1.5cm}
 	{\huge\bfseries DSM Project Report \par}
 	\vspace{1cm}
-	{\large\itshape{Simon Kraft, Joshua Payne, El Sall}\par}
+	\begin{tabular}{lll}
+	\toprule
+	\textbf{Name} & \textbf{Email} & \textbf{Student ID} \\
+	\midrule
+	Simon Kraft   & kraft@unbc.ca  & 230171256 \\
+	Joshua Payne  & paynej0@unbc.ca  & 230152032 \\
+	El Sall       & esall@email.com   & 230158722 \\
+	\bottomrule
+	\end{tabular}
 	\vspace{1cm}
-	{\Large \today}
+
+	{\Large March 30, 2026}
 \end{titlepage}
 
+\begin{abstract}
+	test\cite{eppinger2012}
+\end{abstract}
+
+\newpage
 
 \tableofcontents
 \newpage
 
 % Content
-\section{Abstract}
+% \section{Abstract}
+
 
 
 \section{Introduction}
+
+
 
 \section{Method of Optimization}
 
@@ -94,10 +124,7 @@
 
 \section{Conclusion}
 
+\printbibliography
 
-\begin{singlespace}
-	\begin{thebibliography}{9}
-	\end{thebibliography}
-\end{singlespace}
 
 \end{document}
