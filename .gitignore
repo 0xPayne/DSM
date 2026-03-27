@@ -85,7 +85,6 @@ out/
 
 # Gradle files
 .gradle/
-build/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -359,7 +358,6 @@ tmtags
 ##### NetBeans
 **/nbproject/private/
 **/nbproject/Package-*.bash
-build/
 nbbuild/
 dist/
 nbdist/
@@ -530,7 +528,6 @@ qrc_*.cpp
 ui_*.h
 *.qmlc
 *.jsc
-*build-*
 *.qm
 *.prl
 
@@ -649,7 +646,6 @@ StyleCopReport.xml
 *.log
 *.vspscc
 *.vssscc
-.builds
 *.pidb
 *.svclog
 *.scc
@@ -1041,8 +1037,6 @@ dkms.conf
 # Raspberry Pi Pico disassembler file
 *.dis
 
-build/
-
 # LaTeX auxiliary files
 *.aux
 *.log
@@ -1072,3 +1066,11 @@ build/
 .DS_Store
 Thumbs.db
 
+# Ignore everything inside the build directory
+build/*
+
+# But do not ignore the directory itself
+!build/
+
+# Do not ignore PDF files inside the build directory
+!build/**/*.pdf

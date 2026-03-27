@@ -6,6 +6,7 @@
 #include "../include/ux.hpp"
 #include "../include/verification.hpp"
 #include "../include/tearing.hpp"
+#include "../include/banding.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -78,9 +79,10 @@ static void runInteractive(const std::string &execPath) {
   auto topo = SparseLib::SCC::topologicalSort(condense);
 
   auto torn_sccs = SparseLib::Tearing::tearAllSCCs(sccs_t, dsm);
+  auto banded_sccs = SparseLib::Banding::bandAllSCCs(torn_sccs, dsm);
 
   // 6. Build permutation and apply P^T A P.
-  auto perm = SparseLib::Permutation::buildPermutation(torn_sccs, topo);
+  auto perm = SparseLib::Permutation::buildPermutation(banded_sccs, topo);
   auto permuted = SparseLib::Permutation::applyPermutation(dsm, perm);
   auto vr = SparseLib::Verify::verifyPermutation(dsm, permuted, perm);
 
@@ -161,8 +163,14 @@ static void runBenchmark(const std::string &execPath) {
     auto t_tear = SparseLib::Bench::measure([&]() {torn_sccs = SparseLib::Tearing::tearAllSCCs(sccs, dsm); });
     records.push_back({name, dsm.cols, dsm.nnz, "Tearing", t_tear});
 
+    std::vector<std::vector<int>> banded_sccs;
+    auto t_band = SparseLib::Bench::measure([&]() {
+	    banded_sccs = SparseLib::Banding::bandAllSCCs(torn_sccs, dsm);
+	    });
+    records.push_back({name, dsm.cols, dsm.nnz, "Banding", t_band});
+
     // --- Time permutation application ---
-    auto perm = SparseLib::Permutation::buildPermutation(torn_sccs, topo);
+    auto perm = SparseLib::Permutation::buildPermutation(banded_sccs, topo);
     Sparse::CSCMatrix permuted;
     auto t5 = SparseLib::Bench::measure([&]() {
       permuted = SparseLib::Permutation::applyPermutation(dsm, perm);
