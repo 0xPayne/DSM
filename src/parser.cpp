@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #include "../include/parser.hpp"
 
 #include <utility>
@@ -34,11 +37,11 @@ namespace SparseLib::IO {
         duplets.resize(nnz);
         for (int i = 0; i < nnz; i++) {
             int r, c;
-            // Matrix Market files often have a 3rd column for values; 
+            // Matrix Market files typically have a 3rd column for values,
             // since this is valueless, we just read r and c and ignore the rest of the line.
             if (!(file >> r >> c)) throw std::runtime_error("Read error at line " + std::to_string(i));
             duplets[i] = {r - 1, c - 1}; // Convert to 0-based indexing
-            
+
             // Consume the rest of the line (in case there are weights/values)
             std::string dummy;
             std::getline(file, dummy);
@@ -87,5 +90,5 @@ namespace SparseLib::IO {
 
         ofs.close();
     }
-}
 
+} // namespace SparseLib::IO

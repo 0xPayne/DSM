@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project 
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #include "../include/banding.hpp"
 #include <algorithm>
 #include <cassert>
@@ -8,38 +11,18 @@
 
 namespace SparseLib::Banding {
 
-// ============================================================================
-// References
-// ============================================================================
-//
-// [1] Cuthill, E. & McKee, J., "Reducing the bandwidth of sparse symmetric
-//     matrices", Proceedings of the 1969 24th National Conference, ACM, 1969,
-//     pp. 157-172.  DOI: 10.1145/800195.805928
-//
-// [2] George, A., "Computer implementation of the finite element method",
-//     PhD thesis, Stanford University, 1971.
-//     (Introduced the Reverse Cuthill-McKee (RCM) variant.)
-//
-// [3] George, A. & Liu, J. W. H., "An implementation of a pseudoperipheral
-//     node finder", ACM Transactions on Mathematical Software, 5(3), 1979,
-//     pp. 284-295.  DOI: 10.1145/355841.355845
-//     (Pseudo-peripheral node heuristic used for RCM starting vertex.)
-//
-// [4] Gibbs, N. E., Poole, W. G. & Stockmeyer, P. K., "An algorithm for
-//     reducing the bandwidth and profile of a sparse matrix", SIAM Journal
-//     on Numerical Analysis, 13(2), 1976, pp. 236-250.
-//     DOI: 10.1137/0713023
-//     (GPS algorithm; establishes the pseudo-peripheral starting strategy
-//      and proves RCM reduces profile compared to CM.)
+// References:
+// [1] Cuthill & McKee, "Reducing the bandwidth of sparse symmetric matrices", ACM 1969
+// [2] George, "Computer implementation of the finite element method", PhD thesis, Stanford 1971
+// [3] George & Liu, "An implementation of a pseudoperipheral node finder", ACM TOMS 5(3), 1979
+// [4] Gibbs, Poole & Stockmeyer, "An algorithm for reducing the bandwidth and profile
+//     of a sparse matrix", SIAM J. Numer. Anal. 13(2), 1976
+// [5] Kernighan & Lin, "An efficient heuristic procedure for partitioning graphs",
+//     Bell Syst. Tech. J. 49(2), 1970
 
-// ============================================================================
-// Internal helpers (anonymous namespace -- internal linkage)
-// ============================================================================
 namespace {
 
-// ---------------------------------------------------------------------------
 // Local SCC subgraph: undirected adjacency + directed edge list
-// ---------------------------------------------------------------------------
 struct LocalGraph {
   int k;                                     // number of vertices in the SCC
   std::unordered_map<int, int> g2l;          // global vertex ID -> local index
@@ -53,12 +36,7 @@ struct LocalGraph {
   std::vector<Edge> directed_edges;
 };
 
-/// Build the local undirected adjacency list and directed edge list for an SCC.
-/// Follows the same global-to-local mapping pattern as elsOrder() in tearing.cpp.
-///
-/// The undirected graph is the symmetric closure of the directed subgraph
-/// induced by scc_vertices.  Self-loops and inter-SCC arcs are excluded.
-/// Adjacency lists are sorted by degree (ascending) for Cuthill-McKee [1].
+// Build local undirected adjacency and directed edge list for an SCC.
 LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
                            const Sparse::CSCMatrix &matrix) {
   LocalGraph G;
@@ -68,7 +46,7 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
   for (int i = 0; i < G.k; ++i)
     G.g2l[scc_vertices[i]] = i;
 
-  // Temporary set-based adjacency to deduplicate undirected edges.
+  // deduplicate undirected edges via sets
   std::vector<std::unordered_set<int>> adj_set(G.k);
 
   for (int i = 0; i < G.k; ++i) {
@@ -87,7 +65,7 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
     }
   }
 
-  // Convert sets to sorted vectors and compute degrees.
+  // convert to sorted vectors
   G.adj.resize(G.k);
   G.deg.resize(G.k);
   for (int i = 0; i < G.k; ++i) {
@@ -95,7 +73,7 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
     G.deg[i] = static_cast<int>(G.adj[i].size());
   }
 
-  // Sort each adjacency list by degree ascending (Cuthill-McKee rule [1]).
+  // sort adj lists by degree ascending [1]
   for (int i = 0; i < G.k; ++i) {
     std::sort(G.adj[i].begin(), G.adj[i].end(),
               [&](int a, int b) { return G.deg[a] < G.deg[b]; });
@@ -104,19 +82,8 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
   return G;
 }
 
-// ---------------------------------------------------------------------------
-// Pseudo-peripheral vertex finder  [3]
-// ---------------------------------------------------------------------------
-// Uses iterated BFS to locate a vertex of high eccentricity, which serves
-// as a good starting node for the Cuthill-McKee algorithm [1].
-//
-// George & Liu [3] showed that starting BFS from an arbitrary vertex,
-// selecting a vertex from the last level, and repeating until the
-// eccentricity (number of BFS levels) stops increasing, yields a
-// pseudo-peripheral vertex in practice.  Two to three rounds suffice.
-
+// Pseudo-peripheral vertex finder [3]
 int findPseudoPeripheral(const LocalGraph &G) {
-  // BFS returning (last-level vertices, eccentricity).
   auto bfs = [&](int start) -> std::pair<std::vector<int>, int> {
     std::vector<int> dist(G.k, -1);
     std::queue<int> q;
@@ -149,9 +116,9 @@ int findPseudoPeripheral(const LocalGraph &G) {
   for (int round = 0; round < 5; ++round) {
     auto [last_level, ecc] = bfs(current);
     if (ecc <= prev_ecc)
-      break; // eccentricity did not increase -- converged
+      break; // converged
     prev_ecc = ecc;
-    // Pick the vertex from the last level with minimum degree (heuristic [3]).
+    // pick min-degree vertex from last level [3]
     int best = last_level[0];
     for (int v : last_level)
       if (G.deg[v] < G.deg[best])
@@ -162,17 +129,7 @@ int findPseudoPeripheral(const LocalGraph &G) {
   return current;
 }
 
-// ---------------------------------------------------------------------------
-// Reverse Cuthill-McKee (RCM) ordering  [1, 2, 4]
-// ---------------------------------------------------------------------------
-// The Cuthill-McKee algorithm [1] performs a BFS from a starting vertex,
-// enqueuing unvisited neighbours in order of ascending degree.  George [2]
-// observed that reversing this ordering consistently produces lower
-// bandwidth and profile.  Gibbs, Poole & Stockmeyer [4] provided further
-// theoretical justification for the RCM variant.
-//
-// Complexity: O(k + m_scc) where k = |SCC| and m_scc = edges within the SCC.
-
+// Reverse Cuthill-McKee (RCM) ordering [1, 2, 4]
 std::vector<int> rcmOrder(const LocalGraph &G) {
   int start = findPseudoPeripheral(G);
 
@@ -189,8 +146,7 @@ std::vector<int> rcmOrder(const LocalGraph &G) {
     q.pop();
     order.push_back(u);
 
-    // Enqueue unvisited neighbours in ascending degree order.
-    // G.adj[u] is already sorted by degree ascending (see buildLocalGraph).
+    // enqueue unvisited neighbours (already sorted by degree)
     for (int v : G.adj[u]) {
       if (!visited[v]) {
         visited[v] = true;
@@ -199,31 +155,19 @@ std::vector<int> rcmOrder(const LocalGraph &G) {
     }
   }
 
-  // Handle disconnected components within the SCC subgraph's undirected view.
-  // (Rare: an SCC is strongly connected, but the undirected symmetrisation
-  //  can still leave isolated components in degenerate cases.)
+  // catch any disconnected vertices
   for (int i = 0; i < G.k; ++i) {
     if (!visited[i])
       order.push_back(i);
   }
 
-  // Reverse to obtain RCM [2].
+  // reverse for RCM [2]
   std::reverse(order.begin(), order.end());
 
   return order;
 }
 
-// ---------------------------------------------------------------------------
-// Local FBM and TFBD computation for an SCC
-// ---------------------------------------------------------------------------
-// Given a vertex ordering (local indices in the desired sequence) and the
-// directed edge list, compute FBM and TFBD restricted to this SCC.
-//
-// In the CSC convention of this project, entry (row, col) with row < col is
-// a feedback mark.  After permutation, col = pos(source), row = pos(target)
-// for a directed edge source -> target.  A feedback mark occurs when
-// pos(target) < pos(source), i.e. the target appears before the source.
-
+// Local FBM and TFBD computation for an SCC ordering
 struct Metrics {
   int fbm;
   long long tfbd;
@@ -231,7 +175,6 @@ struct Metrics {
 
 Metrics localMetrics(const std::vector<int> &order,
                      const std::vector<LocalGraph::Edge> &edges, int k) {
-  // pos[local_vertex] = position in the ordering
   std::vector<int> pos(k);
   for (int i = 0; i < k; ++i)
     pos[order[i]] = i;
@@ -240,7 +183,7 @@ Metrics localMetrics(const std::vector<int> &order,
   for (const auto &e : edges) {
     int p_src = pos[e.src];
     int p_dst = pos[e.dst];
-    if (p_dst < p_src) { // feedback mark: target before source
+    if (p_dst < p_src) { // feedback mark
       ++m.fbm;
       m.tfbd += p_src - p_dst;
     }
@@ -248,39 +191,18 @@ Metrics localMetrics(const std::vector<int> &order,
   return m;
 }
 
-// ---------------------------------------------------------------------------
-// Adjacent-swap hill climbing on TFBD
-// ---------------------------------------------------------------------------
-// After the initial RCM (or tearing) ordering, iteratively scan all adjacent
-// pairs and swap them if doing so strictly reduces TFBD without increasing
-// FBM.  Each swap delta is computed in O(deg(a) + deg(b)) by examining only
-// the edges incident to the two vertices involved, rather than recomputing
-// the full metric.
-//
-// Convergence: each pass is O(k * d_avg).  Passes repeat until no improving
-// swap exists, capped at max_passes to bound runtime on large SCCs.
-//
-// This local-search strategy is a standard neighbourhood-based improvement
-// heuristic for combinatorial optimisation on permutations; see e.g.:
-//
-// [5] Kernighan, B. W. & Lin, S., "An efficient heuristic procedure for
-//     partitioning graphs", Bell System Technical Journal, 49(2), 1970,
-//     pp. 291-307.  DOI: 10.1002/j.1538-7305.1970.tb01770.x
-//     (Foundational pairwise-swap improvement for graph partitioning.)
-
+// Adjacent-swap hill climbing on TFBD [5]
 std::vector<int>
 localRefine(const std::vector<int> &initial_order,
             const std::vector<LocalGraph::Edge> &edges, int k,
             int max_passes = 20) {
   std::vector<int> order = initial_order;
 
-  // pos[local_vertex] = position in the ordering
   std::vector<int> pos(k);
   for (int i = 0; i < k; ++i)
     pos[order[i]] = i;
 
-  // Build incidence lists: for each local vertex, the indices into `edges`
-  // where that vertex appears as src or dst.
+  // incidence lists per vertex
   std::vector<std::vector<int>> incident(k);
   for (int ei = 0; ei < static_cast<int>(edges.size()); ++ei) {
     incident[edges[ei].src].push_back(ei);
@@ -291,44 +213,34 @@ localRefine(const std::vector<int> &initial_order,
     bool improved = false;
 
     for (int i = 0; i < k - 1; ++i) {
-      int a = order[i];     // vertex at position i
-      int b = order[i + 1]; // vertex at position i+1
+      int a = order[i];
+      int b = order[i + 1];
 
-      // Compute delta_tfbd and delta_fbm if we swap a and b.
-      // After swap: a moves to i+1, b moves to i.
+      // compute delta if we swap a and b
       int delta_fbm = 0;
       long long delta_tfbd = 0;
-
-      // Process edges incident to a or b.  Use a merged scan over both
-      // incidence lists.  For each edge, compute contribution change.
-      //
-      // For an edge (src, dst): its TFBD contribution is
-      //   max(0, pos[src] - pos[dst])   if it's a feedback mark
-      //
-      // We need to check: does the edge's FBM status or distance change
-      // when a moves from i to i+1 and b moves from i+1 to i?
 
       auto process_edges = [&](int vertex) {
         for (int ei : incident[vertex]) {
           int s = edges[ei].src;
           int d = edges[ei].dst;
 
-          // Skip the edge between a and b -- handle it separately below.
+          // skip a-b edge, handled below
           if ((s == a && d == b) || (s == b && d == a))
             continue;
 
           int ps_old = pos[s];
           int pd_old = pos[d];
 
-          // New positions after swapping a (at i) and b (at i+1).
+          // new positions after swap
           int ps_new = (s == a) ? i + 1 : (s == b) ? i : ps_old;
           int pd_new = (d == a) ? i + 1 : (d == b) ? i : pd_old;
 
-          // Old FBM/TFBD contribution of this edge.
+          // old contribution
           bool fbm_old = (pd_old < ps_old);
           long long dist_old = fbm_old ? (ps_old - pd_old) : 0;
 
-          // New contribution.
+          // new contribution
           bool fbm_new = (pd_new < ps_new);
           long long dist_new = fbm_new ? (ps_new - pd_new) : 0;
 
@@ -344,7 +256,7 @@ localRefine(const std::vector<int> &initial_order,
       process_edges(a);
       process_edges(b);
 
-      // Handle the direct edge(s) between a and b.
+      // handle direct a-b edge(s)
       for (int ei : incident[a]) {
         int s = edges[ei].src;
         int d = edges[ei].dst;
@@ -352,7 +264,6 @@ localRefine(const std::vector<int> &initial_order,
           continue;
 
         int ps_old = pos[s], pd_old = pos[d];
-        // After swap: a goes to i+1, b goes to i.
         int ps_new = (s == a) ? i + 1 : i;
         int pd_new = (d == a) ? i + 1 : i;
 
@@ -369,7 +280,7 @@ localRefine(const std::vector<int> &initial_order,
         delta_tfbd += dist_new - dist_old;
       }
 
-      // Accept swap only if TFBD strictly improves and FBM does not worsen.
+      // accept if TFBD improves and FBM doesn't worsen
       if (delta_tfbd < 0 && delta_fbm <= 0) {
         std::swap(order[i], order[i + 1]);
         pos[a] = i + 1;
@@ -387,21 +298,7 @@ localRefine(const std::vector<int> &initial_order,
 
 } // anonymous namespace
 
-// ============================================================================
-// Public API
-// ============================================================================
-
-/// Apply bandwidth-reduction banding to each SCC.
-///
-/// Two-phase refinement per non-trivial SCC:
-///   Phase 1 -- Reverse Cuthill-McKee (RCM) [1,2,4] reordering of the
-///              undirected symmetrisation of the SCC subgraph.
-///   Phase 2 -- Adjacent-swap hill climbing [5] on TFBD, constrained to
-///              never increase FBM.
-///
-/// If RCM increases FBM relative to the input (tearing) ordering, Phase 1
-/// is skipped and Phase 2 refines the tearing ordering directly.  This
-/// guarantees FBM is never worse than the input.
+// Two-phase banding per SCC: Phase 1 = RCM [1,2,4], Phase 2 = hill climbing [5]
 std::vector<std::vector<int>>
 bandAllSCCs(const std::vector<std::vector<int>> &torn_sccs,
             const Sparse::CSCMatrix &matrix) {
@@ -466,7 +363,7 @@ bandAllSCCs(const std::vector<std::vector<int>> &torn_sccs,
     for (int li : refined)
       global_order.push_back(scc[li]);
 
-    // Sanity: output must be a permutation of the input SCC.
+    // Output must be a permutation of the input SCC.
     assert(static_cast<int>(global_order.size()) == k);
 
     result.push_back(std::move(global_order));

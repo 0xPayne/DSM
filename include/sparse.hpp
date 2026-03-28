@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #pragma once
 #include <vector>
 
@@ -15,8 +18,4 @@ namespace Sparse {
 
     CSCMatrix transpose(CSCMatrix&& mat);
 
-    CSCMatrix add(const CSCMatrix& a, const CSCMatrix& b);
-
-    CSCMatrix multiply(const CSCMatrix& a, const CSCMatrix& b);
-
-}
+} // namespace Sparse

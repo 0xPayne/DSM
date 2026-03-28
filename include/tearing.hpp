@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #pragma once
 #include "sparse.hpp"
 #include <vector>

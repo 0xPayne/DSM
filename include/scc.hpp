@@ -1,21 +1,20 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #pragma once
 #include "sparse.hpp"
 #include <vector>
 
-namespace SparseLib {
+namespace SparseLib::SCC {
 
-namespace SCC {
-
-    // Returns a list of strongly connected components; each component is a vector of vertex indices
-    // CSC matrix is interpreted as outgoing edges of vertex u are in column u
+    // find SCCs using Tarjan's or Kosaraju's algorithm
     std::vector<std::vector<int>> tarjanSCC(const Sparse::CSCMatrix& matrix);
     std::vector<std::vector<int>> kosarajuSCC(const Sparse::CSCMatrix& matrix);
 
-    // Build the condensation graph of the Strongly Connected Components
+    // build the DAG of SCCs
     Sparse::CSCMatrix condensationGraph(const Sparse::CSCMatrix& matrix, const std::vector<std::vector<int>>& sccs);
 
-    // Perform topological sorting on the condensation graph
-    // returns a vector of indices of the original SCCs in topologically sorted order
+    // topological sort (Kahn's algorithm)
     std::vector<int> topologicalSort(const Sparse::CSCMatrix& matrix);
 
-}} 
+} // namespace SparseLib::SCC

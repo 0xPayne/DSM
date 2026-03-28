@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #pragma once
 
 #include <chrono>
@@ -31,9 +34,8 @@ inline void clobberMemory() { asm volatile("" : : : "memory"); }
 inline void clobberMemory() { std::atomic_signal_fence(std::memory_order_seq_cst); }
 #endif
 
-// Benchmark any callable over `trials` timed runs preceded by `warmup`
-// untimed runs (to prime instruction caches, branch predictors, and
-// data caches). Uses steady_clock for monotonic, high-resolution timing.
+// Benchmark any callable over trials timed runs preceded by warmup
+// untimed runs.
 template<typename Func>
 TimingResult measure(Func&& fn, int warmup = DEFAULT_WARMUP, int trials = DEFAULT_TRIALS) {
     for (int i = 0; i < warmup; ++i) fn();

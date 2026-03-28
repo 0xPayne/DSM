@@ -1,7 +1,10 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #include "../include/sparse.hpp"
 
 namespace Sparse {
-    
+
 Sparse::CSCMatrix transpose(Sparse::CSCMatrix&& mat) {
   const int n = mat.cols;
   Sparse::CSCMatrix result(n, n, mat.nnz);
@@ -27,4 +30,4 @@ Sparse::CSCMatrix transpose(Sparse::CSCMatrix&& mat) {
   return result;
 }
 
-}
+} // namespace Sparse

@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #include "../include/benchmark.hpp"
 
 #include <iostream>
@@ -15,9 +18,7 @@
 
 namespace SparseLib::Bench {
 
-// ---------------------------------------------------------------------------
 // System information: CPU, memory, cache hierarchy, compiler
-// ---------------------------------------------------------------------------
 
 #ifdef __APPLE__
 static std::string sysctlString(const char* key) {
@@ -46,7 +47,7 @@ std::string systemInfo() {
     int64_t mem = sysctlInt64("hw.memsize");
     if (mem > 0) oss << "  RAM:       " << (mem / (1024 * 1024 * 1024)) << " GB\n";
 
-    // Try standard cache keys first (Intel), then per-perf-level (Apple Silicon)
+    // Intel keys first, then Apple Silicon fallback
     int64_t l1d = sysctlInt64("hw.l1dcachesize");
     if (l1d <= 0) l1d = sysctlInt64("hw.perflevel0.l1dcachesize");
     if (l1d > 0) oss << "  L1d:       " << (l1d / 1024) << " KB\n";
@@ -117,9 +118,7 @@ std::string systemInfo() {
     return oss.str();
 }
 
-// ---------------------------------------------------------------------------
 // Output formatting
-// ---------------------------------------------------------------------------
 
 static const char* SEPARATOR =
     "================================================================================";
@@ -191,9 +190,7 @@ void printTable(const std::vector<BenchmarkRecord>& records) {
     std::cout << std::string(total_w, '-') << "\n";
 }
 
-// ---------------------------------------------------------------------------
-// CSV export (consumed by Python plotting script)
-// ---------------------------------------------------------------------------
+// CSV export
 
 void writeCSV(const std::string& path, const std::vector<BenchmarkRecord>& records) {
     std::ofstream out(path);

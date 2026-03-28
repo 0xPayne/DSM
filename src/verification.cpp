@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #include "../include/verification.hpp"
 #include <algorithm>
 #include <utility>
@@ -36,10 +39,7 @@ Result verifyPermutation(
         return {false, "nnz mismatch: original " + std::to_string(original.nnz) +
                         ", permuted " + std::to_string(permuted.nnz)};
 
-    // 3. Edge set equal under the permutation.
-    //    Collect (row, col) from original.
-    //    Collect (perm[row], perm[col]) from permuted (un-permute back to original space).
-    //    Sort both and compare.
+    // 3. edge sets must match under the permutation
     using Edge = std::pair<int,int>;
 
     auto collectEdges = [](const Sparse::CSCMatrix& m) {
@@ -53,8 +53,7 @@ Result verifyPermutation(
 
     std::vector<Edge> orig_edges = collectEdges(original);
 
-    // Un-permute: perm[new_pos] = old_vertex, so map each (new_row, new_col)
-    // back to (perm[new_row], perm[new_col]) in original.
+    // un-permute back to original space
     std::vector<Edge> perm_edges;
     perm_edges.reserve(permuted.nnz);
     for (int col = 0; col < permuted.cols; col++)

@@ -1,3 +1,6 @@
+// CPSC 482 : DSM Project
+// Authors: Simon Kraft, Joshua Payne, El Sall
+
 #pragma once
 #include "sparse.hpp"
 
@@ -11,8 +14,7 @@ namespace SparseLib::Verify {
         std::string message;
     };
 
-    // Verify that `permuted` is exactly the symmetric permutation P^T A 
-    // of `original`, with no edges lost or introduced.
+    // check that permuted == P^T A P with no lost or extra edges
     Result verifyPermutation(
         const Sparse::CSCMatrix& original,
         const Sparse::CSCMatrix& permuted,
