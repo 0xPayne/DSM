@@ -15,13 +15,18 @@
 \usepackage[nottoc]{tocbibind}
 \usepackage{setspace}
 \usepackage[
-    backend=biber, 
-    style=ieee,
-    maxnames=1,
-    giveninits=true, 
-    doi=true,
-    isbn=false
-]{biblatex}
+natbib,
+maxnames=1,
+minnames=1,
+maxbibnames=99, % change this to adjust the number of names to be shown in the references
+style=numeric,
+sortcites=true,
+uniquename=init,
+giveninits,
+doi=false,
+backend=biber,
+backref,
+hyperref]{biblatex}
 \usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
 \usepackage{listings}
 \usepackage{caption}
@@ -101,7 +106,7 @@
 \end{titlepage}
 
 \begin{abstract}
-	test\cite{eppinger2012}
+The Design Structure Matrix (DSM) is a compact representation of task dependencies in large-scale engineering and software systems. Efficient reordering of DSM tasks to minimize feed-back dependencies is a computationally challenging problem with significant practical importance. In this report, we present an implementation of two classical strongly connected component (SCC) algorithms --- Tarjan's algorithm and the Sharir-Kosaraju algorithm --- using the Compressed Sparse Column (CSC) data structure in order to decompose DSMs into block lower triangular form. We evaluate both algorithms on a suite of benchmark sparse matrices and compare their performance in terms of running time, number of SCCs identified, and solution quality as measured by the number of feed-back marks and total feed-back distance. Our results demonstrate that [PLACEHOLDER: insert key finding, e.g., ``both algorithms produce identical partitionings, with Tarjan's algorithm achieving a modest runtime advantage on larger inputs'']. 
 \end{abstract}
 
 \newpage
@@ -109,20 +114,37 @@
 \tableofcontents
 \newpage
 
-% Content
-% \section{Abstract}
-
 
 
 \section{Introduction}
 
+Modern software systems and engineering projects are constantly growing in complexity, often comprising hundreds or even thousands of interdependent tasks that require the collaboration of many participants from diverse backgrounds. Traditional management tools such as Gantt charts and Critical Path Method (CPM) networks are well-suited for modeling sequential and parallel task executions. However, they fail for interdependent tasks, i.e.~when the output of one task is needed as input for another task, and vice versa. As these tasks are especially common in complex product development (PD), project managers require tools capable of modeling interdepdencies and identifying a task ordering that minimizes potential conflicts in information flow~\cite{Yassine2001AnIT}.
+
+An effective tool for representing the pairwise information flow between a set of tasks is a square matrix called the \textit{design structure matrix} or \textit{dependency structure matrix} (DSM). If a project is composed of $n$ tasks, a DSM models the information flow between these tasks in a binary $n \times n$ matrix, where the rows and columns are both labeled by the same ordered list of tasks. Marks in the DSM indicate the relationship between two tasks. The marks in a single row of the DSM show all the tasks that provide input that is needed to perform the task in the corresponding row. Similarly, marks in a single column display all the tasks that receive information from the corresponding task in that column~\cite{Yassine2001AnIT}. For instance, the $(i,j)$-th entry of the DSM is $1$, if task $i$ depends on task $j$, and it is $0$ if task $i$ can be completed independent of task $j$. Furthermore, the diagonal entries do not represent dependencies with other tasks and are therefore often disregarded. Equivalent to its matrix representation, a DSM can also be displayed as a directed graph~\cite{eppinger2012}.
+
+If the ordering of tasks along the axes is interpreted as the sequence in which the tasks are executed, then three different types of dependencies can be identified for a pair of tasks~\cite{Yassine2001AnIT}.
+
+\begin{itemize}
+	\item \textbf{Feed-Forward}: Marks that represent the forward transfer of information. Task $j$ supplies information for task $i$ and is scheduled before it, i.e. $j < i$. The pair $(i,j)$ is located below the diagonal. These dependencies are easy to solve as task $i$ just waits for task $j$ to finish.
+	\item \textbf{Feed-Back}: Marks that represent the backward transfer of information. Task $j$ supplies information for task $i$ but is scheduled afterwards, i.e. $i < j$. The pair $(i, j)$ is located above the diagonal. This means that the required inputs (task $j$) are not available at the time of executing task $i$, making it necessary to make assumptions about the inputs that may not hold if task $j$ is finally executed. In the worst case, the dependent task $i$ needs to be re-executed.
+	\item \textbf{Coupled}: Task $i$ and $j$ are mutually dependent and both require input from each other, i.e. the pairs $(i, j)$ and $(j,i)$ both exist in the DSM. These tasks require iteration as neither task can be started first without making assumptions about the output of the other task. 
+\end{itemize}
+
+An important objective from a project managers perspective is to reduce the number of feed-back marks to minimize the potential conflicts that could arise during the execution of tasks. This process is regarded as \textit{partitioning}~\cite{steward1981,Yassine01091999}.
 
 
-\section{Method of Optimization}
+
+
+
+
+
+\section{Description of Solution}
 
 \section{Numerical Results}
 
 \section{Conclusion}
+
+
 
 \printbibliography
 

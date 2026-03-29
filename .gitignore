@@ -1052,6 +1052,8 @@ dkms.conf
 *.nav
 *.snm
 *.vrb
+*.bcf
+*.run.xml
 
 # Backup files
 *~
