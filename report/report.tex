@@ -130,19 +130,41 @@ If the ordering of tasks along the axes is interpreted as the sequence in which 
 	\item \textbf{Coupled}: Task $i$ and $j$ are mutually dependent and both require input from each other, i.e. the pairs $(i, j)$ and $(j,i)$ both exist in the DSM. These tasks require iteration as neither task can be started first without making assumptions about the output of the other task. 
 \end{itemize}
 
-An important objective from a project managers perspective is to reduce the number of feed-back marks to minimize the potential conflicts that could arise during the execution of tasks. This process is regarded as \textit{partitioning}~\cite{steward1981,Yassine01091999}.
+An important objective from a project managers perspective is reorder the tasks to reduce the number of feed-back marks to minimize the potential conflicts that could arise during the execution stage. This process is regarded as \textit{partitioning}~\cite{steward1981,Yassine01091999}. 
+
+In the ideal scenario, the permutation of the rows and columns leads to a lower triangular form in the DSM, that eliminated all feed-back marks. However, not all DSM can be permuted to lower triangular for~\cite{Yassine2001AnIT}. Especially for complex engineering systems it is highly unlikely that all feed-back marks can be moved underneath the diagonal, therefore the second objective is to move the remaining feed-back marks as close as possible to the diagonal, as this causes fewer tasks to be involved in the iteration cycle, leading to a faster development process. 
+
+With these two objectives at hand, the DSM partitioning problem can be stated as follows. Let $A \in \mathbb{R}^{n \times n}$ be a binary matrix representing the DSM and let $P \in \mathbb{R}^{n \times n}$ be a permutation matrix obtained by permuting the columns/ rows of the identity matrix $I_n$. The symmetrically permuted matrix $A' = P^\top A P$ represents the reordered DSM, where the goal is to find the permutation matrix $P$ that minimizes two quantities~\cite{hossain_addendum}: 
+
+\begin{enumerate}
+	\item The number of feed-back marks $|\text{FBM}|$, where
+	\begin{equation*}
+		\text{FBM} = \{ a'_{ij} \neq 0 \mid j > i, \; i,j = 1, 2, \ldots, n \}
+	\end{equation*} 
+
+	\item The total feed-back distance TFBD of feed-back marks from the diagonal
+	\begin{equation*}
+		\text{TFBD} = \sum_{a'_{ij} \in \text{FBM}} (j - i),
+	\end{equation*}
+\end{enumerate}
+
+\textcolor{red}{Insert Existing Solutions}
+
+The remainder of this report is structured as follows: Section~\ref{sec:solution} describes CSC matrix data structure and the algorithms that were used to permute the DSM, including their asymptotic runtime and space complexities. Section~\ref{sec:results} presents the results of our numerical experiments on benchmark matrices in terms of solution quality and running time. Section~\ref{sec:conclusion} summarizes our findings and provides future research directions of this work.
+
+
+
+\newpage
 
 
 
 
 
+\section{Description of Solution}\label{sec:solution}
 
+\section{Numerical Results}\label{sec:results}
 
-\section{Description of Solution}
-
-\section{Numerical Results}
-
-\section{Conclusion}
+\section{Conclusion}\label{sec:conclusion}
 
 
 
