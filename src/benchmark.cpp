@@ -123,6 +123,11 @@ std::string systemInfo() {
 static const char* SEPARATOR =
     "================================================================================";
 
+static double reductionPercent(long long base, long long stage) {
+    if (base <= 0) return 0.0;
+    return 100.0 * static_cast<double>(base - stage) / static_cast<double>(base);
+}
+
 void printHeader() {
     std::cout << "\n" << SEPARATOR << "\n"
               << "  DSM Benchmark Suite\n"
@@ -148,6 +153,21 @@ void printMatrixStats(const MatrixStats& stats) {
               << "  |  SCCs: " << stats.num_sccs
               << " [largest: " << stats.largest_scc
               << ", singletons: " << stats.singleton_sccs << "]\n";
+}
+
+void printOptimizationComparison(const OptimizationRecord& record) {
+    std::cout << "    Stage quality (FBM / TFBD):\n"
+              << "      Baseline : " << record.fbm_base << " / " << record.tfbd_base << "\n"
+              << "      TopoOnly : " << record.fbm_topo << " / " << record.tfbd_topo
+              << "  (" << std::fixed << std::setprecision(2)
+              << reductionPercent(record.fbm_base, record.fbm_topo) << "% FBM, "
+              << reductionPercent(record.tfbd_base, record.tfbd_topo) << "% TFBD)\n"
+              << "      Tearing  : " << record.fbm_tearing << " / " << record.tfbd_tearing
+              << "  (" << reductionPercent(record.fbm_base, record.fbm_tearing) << "% FBM, "
+              << reductionPercent(record.tfbd_base, record.tfbd_tearing) << "% TFBD)\n"
+              << "      Banding  : " << record.fbm_banding << " / " << record.tfbd_banding
+              << "  (" << reductionPercent(record.fbm_base, record.fbm_banding) << "% FBM, "
+              << reductionPercent(record.tfbd_base, record.tfbd_banding) << "% TFBD)\n";
 }
 
 void printTable(const std::vector<BenchmarkRecord>& records) {
@@ -228,6 +248,56 @@ void writeCSV(const std::string& path, const std::vector<BenchmarkRecord>& recor
     }
 
     std::cout << "\nCSV written to: " << path << "\n";
+}
+
+void writeOptimizationCSV(const std::string& path, const std::vector<OptimizationRecord>& records) {
+    std::ofstream out(path);
+    if (!out) {
+        std::cerr << "Failed to open " << path << " for writing.\n";
+        return;
+    }
+
+    out << "matrix,n,nnz,density_pct,"
+        << "fbm_base,fbm_topo,fbm_tearing,fbm_banding,"
+        << "tfbd_base,tfbd_topo,tfbd_tearing,tfbd_banding,"
+        << "fbm_gain_topo_abs,fbm_gain_tearing_abs,fbm_gain_banding_abs,"
+        << "tfbd_gain_topo_abs,tfbd_gain_tearing_abs,tfbd_gain_banding_abs,"
+        << "fbm_gain_topo_pct,fbm_gain_tearing_pct,fbm_gain_banding_pct,"
+        << "tfbd_gain_topo_pct,tfbd_gain_tearing_pct,tfbd_gain_banding_pct,"
+        << "fbm_gain_topo_to_tearing_abs,fbm_gain_tearing_to_banding_abs,"
+        << "tfbd_gain_topo_to_tearing_abs,tfbd_gain_tearing_to_banding_abs\n";
+
+    out << std::fixed << std::setprecision(4);
+    for (const auto& r : records) {
+        double density_pct = (r.n > 0)
+            ? 100.0 * static_cast<double>(r.nnz) / (static_cast<double>(r.n) * r.n)
+            : 0.0;
+
+        int fbm_gain_topo = r.fbm_base - r.fbm_topo;
+        int fbm_gain_tear = r.fbm_base - r.fbm_tearing;
+        int fbm_gain_band = r.fbm_base - r.fbm_banding;
+        long long tfbd_gain_topo = r.tfbd_base - r.tfbd_topo;
+        long long tfbd_gain_tear = r.tfbd_base - r.tfbd_tearing;
+        long long tfbd_gain_band = r.tfbd_base - r.tfbd_banding;
+
+        out << r.matrix_name << ","
+            << r.n << "," << r.nnz << "," << density_pct << ","
+            << r.fbm_base << "," << r.fbm_topo << "," << r.fbm_tearing << "," << r.fbm_banding << ","
+            << r.tfbd_base << "," << r.tfbd_topo << "," << r.tfbd_tearing << "," << r.tfbd_banding << ","
+            << fbm_gain_topo << "," << fbm_gain_tear << "," << fbm_gain_band << ","
+            << tfbd_gain_topo << "," << tfbd_gain_tear << "," << tfbd_gain_band << ","
+            << reductionPercent(r.fbm_base, r.fbm_topo) << ","
+            << reductionPercent(r.fbm_base, r.fbm_tearing) << ","
+            << reductionPercent(r.fbm_base, r.fbm_banding) << ","
+            << reductionPercent(r.tfbd_base, r.tfbd_topo) << ","
+            << reductionPercent(r.tfbd_base, r.tfbd_tearing) << ","
+            << reductionPercent(r.tfbd_base, r.tfbd_banding) << ","
+            << (r.fbm_topo - r.fbm_tearing) << "," << (r.fbm_tearing - r.fbm_banding) << ","
+            << (r.tfbd_topo - r.tfbd_tearing) << "," << (r.tfbd_tearing - r.tfbd_banding)
+            << "\n";
+    }
+
+    std::cout << "Optimization CSV written to: " << path << "\n";
 }
 
 } // namespace SparseLib::Bench

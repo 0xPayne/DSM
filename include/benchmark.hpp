@@ -87,10 +87,27 @@ struct MatrixStats {
     int singleton_sccs = 0;
 };
 
+// Per-matrix optimization comparison across reordering stages.
+struct OptimizationRecord {
+    std::string matrix_name;
+    int n   = 0;
+    int nnz = 0;
+    int fbm_base    = 0;
+    int fbm_topo    = 0;
+    int fbm_tearing = 0;
+    int fbm_banding = 0;
+    long long tfbd_base    = 0;
+    long long tfbd_topo    = 0;
+    long long tfbd_tearing = 0;
+    long long tfbd_banding = 0;
+};
+
 std::string systemInfo();
 void printHeader();
 void printMatrixStats(const MatrixStats& stats);
+void printOptimizationComparison(const OptimizationRecord& record);
 void printTable(const std::vector<BenchmarkRecord>& records);
 void writeCSV(const std::string& path, const std::vector<BenchmarkRecord>& records);
+void writeOptimizationCSV(const std::string& path, const std::vector<OptimizationRecord>& records);
 
 } // namespace SparseLib::Bench

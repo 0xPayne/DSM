@@ -19,12 +19,9 @@ namespace fs = std::filesystem;
 
 static void reportQualityMetrics(const std::string &name,
                                  const Sparse::CSCMatrix &dsm,
-                                 const Sparse::CSCMatrix &permuted,
                                  const std::vector<std::vector<int>> &sccs) {
   int fbm_before = SparseLib::Metrics::countFBM(dsm);
-  int fbm_after = SparseLib::Metrics::countFBM(permuted);
   long long tfbd_before = SparseLib::Metrics::fbmDiagonalDistance(dsm);
-  long long tfbd_after = SparseLib::Metrics::fbmDiagonalDistance(permuted);
 
   int largest = 0, singletons = 0;
   for (const auto &c : sccs) {
@@ -44,9 +41,6 @@ static void reportQualityMetrics(const std::string &name,
   stats.largest_scc = largest;
   stats.singleton_sccs = singletons;
   SparseLib::Bench::printMatrixStats(stats);
-
-  std::cout << "    After:  FBM=" << fbm_after << ", TFBD=" << tfbd_after
-            << "\n";
 }
 
 // Interactive mode
@@ -109,6 +103,7 @@ static void runBenchmark(const std::string &execPath) {
   }
 
   std::vector<SparseLib::Bench::BenchmarkRecord> records;
+  std::vector<SparseLib::Bench::OptimizationRecord> optimization_records;
 
   for (const auto &filepath : files) {
     std::string name = fs::path(filepath).stem().string();
@@ -146,6 +141,10 @@ static void runBenchmark(const std::string &execPath) {
     });
     records.push_back({name, dsm.cols, dsm.nnz, "Banding", t_band});
 
+    // Recompute stage orderings once for quality metrics export.
+    torn_sccs = SparseLib::Tearing::tearAllSCCs(sccs, dsm);
+    banded_sccs = SparseLib::Banding::bandAllSCCs(torn_sccs, dsm);
+
     auto perm = SparseLib::Permutation::buildPermutation(banded_sccs, topo);
     Sparse::CSCMatrix permuted;
     auto t5 = SparseLib::Bench::measure([&]() {
@@ -169,7 +168,27 @@ static void runBenchmark(const std::string &execPath) {
     // Save and report
     SparseLib::Output::savePermutedMatrix(execPath, filepath, permuted);
     SparseLib::Output::saveSCCBlocks(execPath, filepath, sccs, topo);
-    reportQualityMetrics(name, dsm, permuted, sccs);
+    reportQualityMetrics(name, dsm, sccs);
+
+    auto perm_topo = SparseLib::Permutation::buildPermutation(sccs, topo);
+    auto perm_tearing = SparseLib::Permutation::buildPermutation(torn_sccs, topo);
+    auto topo_only = SparseLib::Permutation::applyPermutation(dsm, perm_topo);
+    auto torn_only = SparseLib::Permutation::applyPermutation(dsm, perm_tearing);
+
+    SparseLib::Bench::OptimizationRecord quality;
+    quality.matrix_name = name;
+    quality.n = dsm.cols;
+    quality.nnz = dsm.nnz;
+    quality.fbm_base = SparseLib::Metrics::countFBM(dsm);
+    quality.fbm_topo = SparseLib::Metrics::countFBM(topo_only);
+    quality.fbm_tearing = SparseLib::Metrics::countFBM(torn_only);
+    quality.fbm_banding = SparseLib::Metrics::countFBM(permuted);
+    quality.tfbd_base = SparseLib::Metrics::fbmDiagonalDistance(dsm);
+    quality.tfbd_topo = SparseLib::Metrics::fbmDiagonalDistance(topo_only);
+    quality.tfbd_tearing = SparseLib::Metrics::fbmDiagonalDistance(torn_only);
+    quality.tfbd_banding = SparseLib::Metrics::fbmDiagonalDistance(permuted);
+    optimization_records.push_back(quality);
+    SparseLib::Bench::printOptimizationComparison(quality);
   }
 
   SparseLib::Bench::printTable(records);
@@ -178,6 +197,10 @@ static void runBenchmark(const std::string &execPath) {
       SparseLib::UX::projectRoot(execPath) / "out" / "benchmark.csv";
   fs::create_directories(csvPath.parent_path());
   SparseLib::Bench::writeCSV(csvPath.string(), records);
+
+  fs::path optimizationPath =
+      SparseLib::UX::projectRoot(execPath) / "out" / "optimization_metrics.csv";
+  SparseLib::Bench::writeOptimizationCSV(optimizationPath.string(), optimization_records);
 }
 
 // Entry point
