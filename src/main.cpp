@@ -10,28 +10,12 @@
 #include "../include/tearing.hpp"
 #include "../include/ux.hpp"
 #include "../include/verification.hpp"
+#include "../include/output.hpp"
 
 #include <filesystem>
 #include <iostream>
 
 namespace fs = std::filesystem;
-
-// Helpers
-static void savePermutedMatrix(const std::string &execPath,
-                               const std::string &inputPath,
-                               const Sparse::CSCMatrix &permuted) {
-  try {
-    fs::path outDir = SparseLib::UX::projectRoot(execPath) / "out" / "permuted";
-    fs::create_directories(outDir);
-    fs::path outPath =
-        outDir / (fs::path(inputPath).stem().string() + "_permuted.mtx");
-    SparseLib::IO::saveToFile(permuted, outPath.string());
-    std::cout << "Wrote permuted matrix to: " << outPath.string() << "\n";
-  } catch (const std::exception &e) {
-    std::cerr << "Warning: failed to write permuted matrix: " << e.what()
-              << "\n";
-  }
-}
 
 static void reportQualityMetrics(const std::string &name,
                                  const Sparse::CSCMatrix &dsm,
@@ -103,7 +87,8 @@ static void runInteractive(const std::string &execPath) {
     std::cout << "Verification passed.\n";
 
   // Save result
-  savePermutedMatrix(execPath, filepath, permuted);
+  SparseLib::Output::savePermutedMatrix(execPath, filepath, permuted);
+  SparseLib::Output::saveSCCBlocks(execPath, filepath, sccs, topo);
 
   // Report improvement
   int fbm_after = SparseLib::Metrics::countFBM(permuted);
@@ -182,7 +167,8 @@ static void runBenchmark(const std::string &execPath) {
     std::cout << "  Verification Passed.\n";
 
     // Save and report
-    savePermutedMatrix(execPath, filepath, permuted);
+    SparseLib::Output::savePermutedMatrix(execPath, filepath, permuted);
+    SparseLib::Output::saveSCCBlocks(execPath, filepath, sccs, topo);
     reportQualityMetrics(name, dsm, permuted, sccs);
   }
 
