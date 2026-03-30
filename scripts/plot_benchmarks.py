@@ -40,13 +40,18 @@ COLORS = {
     "Kosaraju":     "#dc2626",
     "Condensation": "#16a34a",
     "TopoSort":     "#9333ea",
+    "Tearing":      "#ec4899",
+    "Banding":      "#f59e0b",
     "Permute":      "#ea580c",
+    "Verify":       "#14b8a6",
     "FBM-Count":    "#0891b2",
     "TFBD-Sum":     "#ca8a04",
 }
 
 def load_data(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
+    # Keep consistency with the 10-matrix benchmark set used in the report text.
+    df = df[df["matrix"] != "easy-example"].copy()
     df["ve_sum"] = df["n"] + df["nnz"]  # V + E for complexity analysis
     return df
 
@@ -65,7 +70,7 @@ def plot_scaling(df: pd.DataFrame, out_dir: str):
     # Reference line: slope = 1 (linear)
     xr = np.array([df["ve_sum"].min(), df["ve_sum"].max()])
     scale = df.loc[df["ve_sum"].idxmax(), "mean_us"] / df["ve_sum"].max()
-    ax.loglog(xr, xr * scale, "--", color="#9ca3af", linewidth=1, label="O(V+E) ref")
+    ax.loglog(xr, xr * scale, "--", color="#0f766e", linewidth=1, label="O(V+E) ref")
 
     ax.set_xlabel("V + E  (vertices + edges)")
     ax.set_ylabel("Mean runtime (μs)")
