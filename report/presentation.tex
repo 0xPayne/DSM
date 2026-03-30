@@ -1,0 +1,459 @@
+% DSM Partitioning — CPSC 482 Project Presentation
+% Compile with: pdflatex presentation.tex (twice)
+\documentclass[aspectratio=169]{beamer}
+
+% ── Theme & Colours ────────────────────────────────────────────────────────────
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\definecolor{navyblue}{RGB}{28, 43, 74}
+\definecolor{teal}{RGB}{2, 128, 144}
+\definecolor{lightteal}{RGB}{2, 195, 154}
+\definecolor{orange}{RGB}{232, 122, 43}
+\definecolor{slategray}{RGB}{100, 116, 139}
+\definecolor{offwhite}{RGB}{244, 246, 249}
+
+\setbeamercolor{palette primary}{bg=navyblue, fg=white}
+\setbeamercolor{palette secondary}{bg=teal, fg=white}
+\setbeamercolor{palette tertiary}{bg=navyblue, fg=white}
+\setbeamercolor{palette quaternary}{bg=navyblue, fg=white}
+\setbeamercolor{structure}{fg=navyblue}
+\setbeamercolor{frametitle}{bg=navyblue, fg=white}
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{subtitle}{fg=lightteal}
+\setbeamercolor{block title}{bg=teal, fg=white}
+\setbeamercolor{block body}{bg=offwhite, fg=black}
+\setbeamercolor{block title alerted}{bg=orange, fg=white}
+\setbeamercolor{block body alerted}{bg=offwhite, fg=black}
+\setbeamercolor{itemize item}{fg=teal}
+\setbeamercolor{itemize subitem}{fg=orange}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.25ex,dp=1ex,center]{palette secondary}%
+      \usebeamerfont{author in head/foot}Kraft, Payne, Sall
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.34\paperwidth,ht=2.25ex,dp=1ex,center]{palette primary}%
+      \usebeamerfont{title in head/foot}DSM Partitioning — CPSC 482
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.25ex,dp=1ex,right]{palette quaternary}%
+      \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{1em}
+      \insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+    \end{beamercolorbox}}%
+}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ── Title info ─────────────────────────────────────────────────────────────────
+\title[DSM Partitioning]{DSM Partitioning}
+\subtitle{A Multi-Stage Pipeline for Reordering\\Dependency Structure Matrices}
+\author[Kraft, Payne, El Sall]{Simon Kraft \and Joshua Payne \and El Sall}
+\institute[UNBC]{CPSC 482/682 — Data Structures II\\University of Northern British Columbia}
+\date{April 7, 2026}
+
+% ── Helper command ────────────────────────────────────────────────────────────
+\newcommand{\highlight}[1]{\textcolor{teal}{\textbf{#1}}}
+\newcommand{\alertword}[1]{\textcolor{orange}{\textbf{#1}}}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
+
+% ── Title Slide ───────────────────────────────────────────────────────────────
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% ── Outline ───────────────────────────────────────────────────────────────────
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Introduction}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Motivation}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{The challenge:}
+      \begin{itemize}
+        \item Modern software \& engineering projects involve \highlight{hundreds of interdependent tasks}
+        \item Require coordination of large, multidisciplinary teams
+        \item Traditional tools (Gantt, CPM) model sequential \& parallel flows
+        \item \alertword{fail for feedback dependencies}, common in complex product development
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Goal}
+        Find a \textbf{task ordering} that minimises conflicting information flows to enable faster,
+        more predictable project execution.
+      \end{block}
+      \vspace{0.5em}
+      \begin{alertblock}{Key observation}
+        When task~$j$ supplies input to task~$i$ but is scheduled \emph{after} it, assumptions must
+        be made. If wrong, task~$i$ must be \textbf{re-executed}.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Design Structure Matrix (DSM)}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Definition:} A binary matrix $A \in \{0,1\}^{n\times n}$ where
+      \[
+        a_{ij} = 1 \iff \text{task } i \text{ depends on task } j
+      \]
+      \begin{itemize}
+        \item Rows and columns labeled by the same task list
+        \item Diagonal entries carry no inter-task meaning
+        \item Equivalent to directed graph $G(A) = (V,E)$
+      \end{itemize}
+      \vspace{0.4em}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{block}{Three dependency types:}
+        \begin{itemize}
+          \item \highlight{Feed-Forward} ($j < i$): below diagonal — easy
+          \item \alertword{Feed-Back} ($j > i$): above diagonal — problematic
+          \item \textcolor{red}{Coupled}: mutual dependency — hardest
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{The Partitioning Problem}
+  \textbf{Objective:} Find $P \in \{0,1\}^{n\times n}$ such that $A' = P^\top A P$ minimises:
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Objective 1 — Feed-Back Marks}
+        \[
+          |\text{FBM}| = \bigl|\{a'_{ij} \neq 0 \mid j > i\}\bigr|
+        \]
+        Minimise the \textbf{count} of above-diagonal nonzeros.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Objective 2 — Feedback Distance}
+        \[
+          \text{TFBD} = \sum_{a'_{ij} \in \text{FBM}} (j - i)
+        \]
+        Minimise the \textbf{distance} of feed-back marks from the diagonal.
+      \end{block}
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Best case}
+        $G(A)$ has no directed cycles $\Rightarrow$ fully lower triangular,\\$|\text{FBM}| = 0$, $\text{TFBD} = 0$
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{General case}
+        Achieve \highlight{Block Lower Triangular Form (BLTF)}: group cycle-participants into diagonal blocks and minimise feedback distance.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Methodology}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Our 6-Stage Pipeline}
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.55cm,
+    box/.style={rectangle, rounded corners=3pt, draw=navyblue, fill=offwhite,
+                text width=1.6cm, align=center, font=\footnotesize\bfseries, minimum height=0.7cm},
+    arr/.style={-Stealth, thick, color=teal}
+  ]
+    \node[box, fill=teal!20] (csc)  {CSC\\Storage};
+    \node[box, right=of csc] (scc)  {SCC\\Decomp.};
+    \node[box, right=of scc] (topo) {Topo.\\Ordering};
+    \node[box, right=of topo, fill=orange!20] (tear) {Tearing};
+    \node[box, right=of tear, fill=orange!20] (band) {Banding};
+    \node[box, right=of band] (perm) {Permute\\$A' = P^\top AP$};
+
+    \draw[arr] (csc)  -- (scc);
+    \draw[arr] (scc)  -- (topo);
+    \draw[arr] (topo) -- (tear);
+    \draw[arr] (tear) -- (band);
+    \draw[arr] (band) -- (perm);
+
+    \node[below=0.35cm of csc,  font=\tiny, color=slategray] {$O(n+\text{nnz})$};
+    \node[below=0.35cm of scc,  font=\tiny, color=slategray] {$O(V+E)$};
+    \node[below=0.35cm of topo, font=\tiny, color=slategray] {$O(k+m')$};
+    \node[below=0.35cm of tear, font=\tiny, color=slategray] {$O(k^2+m)$};
+    \node[below=0.35cm of band, font=\tiny, color=slategray] {$O(k+m)$};
+    \node[below=0.35cm of perm, font=\tiny, color=slategray] {$O(\text{nnz}\log n)$};
+  \end{tikzpicture}
+
+  \vspace{0.6em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Data Structure: CSC}
+        \begin{itemize}
+          \item Column pointer array \texttt{col\_ptr}$[0\ldots n]$
+          \item Row index array \texttt{row\_ind}$[0\ldots\text{nnz}-1]$
+          \item Storage: $O(n + \text{nnz})$
+          \item No value array needed (binary DSM)
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Why CSC?}
+        Column $j$ lists out-neighbours of vertex $j$,\\
+        giving $O(\deg^+(j))$ access — exactly the\\
+        pattern required for DFS-based SCC algorithms.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{SCC Decomposition}
+  Both algorithms implemented as \textbf{iterative DFS} over CSC, using an explicit stack (no recursion).
+
+  \vspace{0.4em}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Tarjan's Algorithm}
+        \begin{itemize}
+          \item \textbf{Single DFS pass}
+          \item Each vertex $v$ maintains $\mathit{low}(v)$: smallest reachable pre-order time
+          \item $\mathit{low}(v) = v.\mathit{pre}$ at finish $\Rightarrow$ $v$ is SCC root; pop stack
+          \item $O(V+E)$ time, $O(V)$ space
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Kosaraju-Sharir Algorithm}
+        \begin{itemize}
+          \item \textbf{Two DFS passes}
+          \item Pass 1: DFS on $G$, record finish order
+          \item Pass 2: DFS on $\mathit{rev}(G)$ in reverse finish order; each DFS tree = one SCC
+          \item $O(V+E)$ time, $O(V+E)$ space
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4em}
+  After SCC decomposition, the \highlight{condensation DAG} is topologically sorted with
+  \textbf{Kahn's algorithm} to determine the block ordering.
+\end{frame}
+
+\begin{frame}{Tearing \& Banding}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Tearing (intra-block FBM reduction)}
+        \begin{itemize}
+          \item Approximates the \textbf{minimum feedback arc set} within each non-trivial SCC
+          \item Uses \textbf{Algorithm~GR} (Eades et al., 1993): greedily removes sinks, then sources, then the vertex with maximum $\delta = d^+ - d^-$
+          \item Backward edges in the returned ordering are torn
+          \item $O(k^2 + m)$ per SCC (linear scan variant)
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Banding (TFBD reduction)}
+        \begin{itemize}
+          \item \textbf{Reverse Cuthill-McKee (RCM)}: concentrates nonzeros near diagonal
+          \item Pseudoperipheral start via George-Liu BFS
+          \item \textbf{Adjacent-swap refinement}: accepts swaps that decrease TFBD without increasing FBM; up to 20 passes
+          \item Best of torn + RCM orderings is kept
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.4em}
+  \begin{alertblock}{Benchmark data}
+    10 sparse matrices from the project repository, $n = 11$ to $27{,}770$, nnz $= 4$ to $352{,}807$.
+    Compiled with \texttt{-O3}, Apple LLVM 17, Apple M2 / 8\,GB RAM.
+    Each algorithm: 2 warm-up + 5 timed runs.
+  \end{alertblock}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Results}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Stage-wise Quality Improvement}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \textbf{Average reductions across 10 matrices:}
+      \vspace{0.3em}
+      \begin{tabular}{lcc}
+        \toprule
+        Stage & FBM $\downarrow$ & TFBD $\downarrow$ \\
+        \midrule
+        Baseline       & ---      & ---     \\
+        TopoOnly       & 60.16\%  & 86.56\% \\
+        + Tearing      & 76.47\%  & \textit{slight} $\uparrow$ \\
+        + Banding      & \highlight{76.50\%}  & \highlight{85.95\%} \\
+        \bottomrule
+      \end{tabular}
+      \vspace{0.5em}
+      \begin{itemize}
+        \item Topo ordering provides the \textbf{largest single gain}
+        \item Tearing drives further FBM reduction within SCCs
+        \item Banding polishes TFBD without hurting FBM
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.44\textwidth}
+      \begin{block}{Selected matrix results}
+        \small
+        \begin{tabular}{lrr}
+          \toprule
+          Matrix & FBM$_0 \to$ FBM$_f$ & TFBD$_f$ \\
+          \midrule
+          Tina\_AskCal & $12 \to 4$       & 7 \\
+          California   & $6063 \to 192$   & 669 \\
+          wb-cs-stanford & $20131 \to 8537$ & 1.78M \\
+          HEP-th-new   & $104435 \to 8281$ & 10.1M \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Runtime Comparison: Tarjan vs.\ Kosaraju-Sharir}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Key findings}
+        \begin{itemize}
+          \item Both algorithms produce \textbf{identical SCC decompositions}
+          \item Tarjan: mean $\approx 560\,\mu$s
+          \item Kosaraju-Sharir: mean $\approx 992\,\mu$s
+          \item Tarjan is $\approx \mathbf{1.77\times}$ faster on average
+          \item Scaling compatible with expected $O(V+E)$ near-linear behaviour
+        \end{itemize}
+      \end{block}
+      \vspace{0.3em}
+      \begin{alertblock}{Why is Tarjan faster?}
+        Single DFS pass vs.\ two passes + transpose graph construction in Kosaraju-Sharir.
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Pipeline stage runtimes}
+        \small
+        \begin{tabular}{lr}
+          \toprule
+          Stage & Relative cost \\
+          \midrule
+          Tarjan SCC    & low \\
+          Kosaraju SCC  & $1.77\times$ Tarjan \\
+          Condensation  & low \\
+          Topo sort     & low \\
+          Tearing       & moderate \\
+          Banding       & highest \\
+          Permutation   & low \\
+          \bottomrule
+        \end{tabular}
+      \end{block}
+      Banding is the heaviest stage but delivers the final quality gains.
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Qualitative Results — Matrix Spy Plots}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \textbf{California} ($n = 9{,}664$)\\
+      Near-perfect partitioning: almost no residual FBM, no large SCC blocks visible.
+
+      \vspace{0.8em}
+      \textbf{wb-cs-stanford} ($n = 9{,}914$)\\
+      One large persistent SCC block retains significant FBM far from diagonal — explains high residual TFBD.
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \textbf{Tina\_AskCal} ($n = 1{,}023$)\\
+      Clean block structure with well-separated components after reordering.
+
+      \vspace{0.8em}
+      \textbf{GD99\_c} ($n = 62$)\\
+      Illustrates the SCC structure clearly: many trivial singleton and two-node SCCs, plus two larger coupled blocks.
+    \end{column}
+  \end{columns}
+  \vspace{0.5em}
+  \begin{center}
+    \textit{(See appendix figures for full spy plot comparisons before and after partitioning.)}
+  \end{center}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Conclusions}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Conclusions \& Future Work}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{What we achieved}
+        \begin{itemize}
+          \item Implemented full 6-stage DSM reordering pipeline in C++ with CSC
+          \item Both Tarjan and Kosaraju-Sharir SCC algorithms — identical decompositions
+          \item \highlight{76.50\% average FBM reduction}, \highlight{85.95\% average TFBD reduction} across 10 benchmark matrices
+          \item Tarjan $1.77\times$ faster than Kosaraju-Sharir
+          \item Runtime scales near-linearly with $V + E$
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Future directions}
+        \begin{itemize}
+          \item \textbf{Better tearing}: replace greedy Algorithm~GR with an exact or improved heuristic for minimum feedback arc set
+          \item \textbf{Parallelism}: per-SCC tearing \& banding are independent — parallelise for large matrices
+          \item \textbf{Weighted DSMs}: extend to numerical dependency strengths; optimise weighted feedback cost
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section*{Acknowledgements \& Team Contribution}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{frame}{Acknowledgements \& Team Contributions}
+  \begin{block}{AI Disclosure}
+    Claude (Anthropic) and ChatGPT (OpenAI) were used to aid understanding of algorithmic
+    concepts and literature (SCC decomposition, tearing, banding). No AI tool was used
+    to generate code or write report text.
+  \end{block}
+
+  \vspace{0.5em}
+  \begin{block}{Team Member Contributions}
+    \begin{tabular}{ll}
+      \toprule
+      \textbf{Member} & \textbf{Contribution} \\
+      \midrule
+      Simon Kraft   & [e.g., implemented Tarjan's algorithm; wrote Sections 2.1--2.3] \\
+      Joshua Payne  & [e.g., implemented Kosaraju-Sharir; wrote Sections 2.4--2.5] \\
+      El Sall       & [e.g., implemented tearing \& banding; wrote Sections 3 \& 4] \\
+      \bottomrule
+    \end{tabular}
+  \end{block}
+
+  \vspace{0.3em}
+  \centering
+  \large \textbf{Thank you — questions welcome!}
+\end{frame}
+
+\end{document}
