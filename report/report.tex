@@ -109,7 +109,7 @@ hyperref]{biblatex}
 \end{titlepage}
 
 \begin{abstract}
-	The Design Structure Matrix (DSM) is a compact representation of task dependencies in large-scale engineering and software systems. Efficient reordering of DSM tasks to minimize feed-back dependencies is a computationally challenging problem with significant practical importance. In this report, we present an implementation of two classical strongly connected component (SCC) algorithms --- Tarjan's algorithm and the Sharir-Kosaraju algorithm --- using the Compressed Sparse Column (CSC) data structure in order to decompose DSMs into block lower triangular form. We evaluate both algorithms on a suite of benchmark sparse matrices and compare their performance in terms of running time, number of SCCs identified, and solution quality as measured by the number of feed-back marks and total feed-back distance. Our results demonstrate that the full pipeline achieves an average FBM reduction of 76.50\% and TFBD reduction of 85.95\% relative to baseline orderings across 11 benchmark matrices, with both SCC algorithms producing identical decompositions and Tarjan's algorithm running approximately $1.77\times$ faster than Kosaraju-Sharir.
+	The Design Structure Matrix (DSM) is a compact representation of task dependencies in large-scale engineering and software systems. Efficient reordering of DSM tasks to minimize feed-back dependencies is a computationally challenging problem with significant practical importance. In this report, we present an implementation of two classical strongly connected component (SCC) algorithms --- Tarjan's algorithm and the Sharir-Kosaraju algorithm --- using the Compressed Sparse Column (CSC) data structure in order to decompose DSMs into block lower triangular form. We evaluate both algorithms on a suite of benchmark sparse matrices and compare their performance in terms of running time, number of SCCs identified, and solution quality as measured by the number of feed-back marks and total feed-back distance. Our results demonstrate that the full pipeline achieves an average FBM reduction of 76.50\% and TFBD reduction of 85.95\% relative to baseline orderings across 10 benchmark matrices, with both SCC algorithms producing identical decompositions and Tarjan's algorithm running approximately $1.77\times$ faster than Kosaraju-Sharir.
 \end{abstract}
 
 \newpage
@@ -121,7 +121,11 @@ hyperref]{biblatex}
 
 \section{Introduction}\label{sec:intro}
 
+\subsection{Motivation}
+
 Modern software systems and engineering projects are constantly growing in complexity, often comprising hundreds or even thousands of interdependent tasks that require the collaboration of many participants from diverse backgrounds. Traditional management tools such as Gantt charts and Critical Path Method (CPM) networks are well-suited for modeling sequential and parallel task executions. However, they fail for interdependent tasks, i.e.,~when the output of one task is needed as input for another task, and vice versa. As these tasks are especially common in complex product development (PD), project managers require tools capable of modeling interdepdencies and identifying a task ordering that minimizes potential conflicts in information flow~\cite{Yassine2001AnIT}.
+
+\subsection{Design Structure Matrix}
 
 An effective tool for representing the pairwise information flow between a set of tasks is a square matrix called the \textit{design structure matrix} or \textit{dependency structure matrix} (DSM)~\cite{hossain_projectdescription}. If a project is composed of $n$ tasks, a DSM models the information flow between these tasks in a binary $n \times n$ matrix, where the rows and columns are both labeled by the same ordered list of tasks. Marks in the DSM indicate the relationship between two tasks. The marks in a single row of the DSM show all the tasks that provide input that is needed to perform the task in the corresponding row. Similarly, marks in a single column display all the tasks that receive information from the corresponding task in that column~\cite{Yassine2001AnIT}. For instance, the $(i,j)$-th entry of the DSM is $1$, if task $i$ depends on task $j$, and it is $0$ if task $i$ can be completed independent of task $j$. Furthermore, the diagonal entries do not represent dependencies with other tasks and are therefore often disregarded. Equivalent to its matrix representation, a DSM can also be displayed as a directed graph~\cite{eppinger2012}.
 
@@ -132,6 +136,8 @@ If the ordering of tasks along the axes is interpreted as the sequence in which 
 	\item \textbf{Feed-Back}: Marks that represent the backward transfer of information. Task $j$ supplies information for task $i$ but is scheduled afterwards, i.e.,~$i < j$. The pair $(i, j)$ is located above the diagonal. This means that the required inputs (task $j$) are not available at the time of executing task $i$, making it necessary to make assumptions about the inputs that may not hold if task $j$ is finally executed. In the worst case, the dependent task $i$ needs to be re-executed.
 	\item \textbf{Coupled}: Task $i$ and $j$ are mutually dependent and both require input from each other, i.e.,~the pairs $(i, j)$ and $(j,i)$ both exist in the DSM. These tasks require iteration as neither task can be started first without making assumptions about the output of the other task.
 \end{itemize}
+
+\subsection{DSM Partitioning}
 
 An important objective from a project manager's perspective is reorder the tasks to reduce the number of feed-back marks to minimize the potential conflicts that could arise during the execution stage. This process is regarded as \textit{partitioning}~\cite{steward1981,Yassine01091999}.
 
@@ -151,6 +157,8 @@ With these two objectives at hand, the DSM partitioning problem can be stated as
 	      \end{equation*}
 \end{enumerate}
 
+\subsection{Existing Approaches}
+
 Over the years, several algorithmic approaches have been proposed in the literature to solve the DSM partitioning problem~\cite{Yassine2001AnIT,eppinger2012}. However, most methods share the same structure and only differ in the way they identify \textit{information cycles}, i.e.~cycles of two or more mutually dependent tasks. Usually, the partitioning starts by moving tasks with no incoming dependencies (empty rows) to the top of the DSM, and moving tasks with no outgoing dependencies to the bottom of the DSM. Once the these tasks are rearranged, they are removed from the DSM with all their corresponding marks. These steps are repeated until no further reordering is possible~\cite{Yassine2001AnIT}. Any remaining task in the DSM must then be part of at least one information cycle, which must be identified explicitly. Three classical methods have been proposed for this~\cite{eppinger2012,Yassine01091999}:
 
 \begin{itemize}
@@ -160,6 +168,8 @@ Over the years, several algorithmic approaches have been proposed in the literat
 \end{itemize}
 
 When all information cycles are identified, the involved tasks are grouped together to be treated as a single representative block~\cite{Yassine2001AnIT}. Then the procedure restarts on the remaining tasks, which ultimately yields the block lower triangular form of the DSM.
+
+\vspace{1em}
 
 The remainder of this report is structured as follows: Section~\ref{sec:solution} describes CSC matrix data structure and the algorithms that were used to permute the DSM, including their asymptotic runtime and space complexities. Section~\ref{sec:results} presents the results of our numerical experiments on benchmark matrices in terms of solution quality and running time. Section~\ref{sec:conclusion} summarizes our findings and provides future research directions of this work. Finally, the \hyperref[sec:appendix]{Appendix} contains graphical representations of the matrices before and after partitioning.
 
@@ -285,7 +295,7 @@ This section evaluates the proposed DSM reordering method on the benchmark matri
 
 All experiments were executed with the benchmark mode of our implementation (\texttt{./out/main --bench}) using the same software and hardware environment for all matrices. The runs reported in this section were produced on an Apple M2 system with 8~GB RAM, compiled with Apple LLVM 17 under optimization flags (\texttt{-O3}, \texttt{-std=c++17}). For each timed algorithm, we use 2 warm-up runs and 5 timed runs, and report the mean, standard deviation, minimum, median, and maximum runtime in microseconds.
 
-The benchmark suite contains 11 sparse matrices with dimensions ranging from $n=4$ to $n=27{,}770$ and nonzero counts from $4$ to $352{,}807$. This span allows us to examine both small example instances and large, complex graphs that represent realistic dependency systems. In addition to timing, we export matrix-level quality statistics and stage-wise optimization metrics to \texttt{out/optimization\_metrics.csv}, from which the plots in Figures~\ref{fig:fbm-stage}--\ref{fig:stage-avg} are generated.
+The benchmark suite contains 10 sparse matrices with dimensions ranging from $n=11$ to $n=27{,}770$ and nonzero counts from $4$ to $352{,}807$. This span allows us to examine both small example instances and large, complex graphs that represent realistic dependency systems. In addition to timing, we export matrix-level quality statistics and stage-wise optimization metrics to \texttt{out/optimization\_metrics.csv}, from which the plots in Figures~\ref{fig:fbm-stage}--\ref{fig:stage-avg} are generated.
 
 \subsection{Stage-wise Optimization Quality}
 
@@ -352,7 +362,7 @@ Finally, Figure~\ref{fig:stage-avg} summarizes the global pattern: topological b
 
 \section{Conclusion}\label{sec:conclusion}
 
-We presented a multi-stage method for reordering Design Structure Matrices to minimize feed-back marks and total feed-back distance. The approach proceeds through six stages: CSC storage, SCC decomposition, topological block ordering, intra-block tearing via the greedy Algorithm~GR, bandwidth reduction using reverse Cuthill-McKee ordering, and adjacent-swap refinement. Two classical SCC algorithms: Tarjan's and Kosaraju-Sharir---were implemented over the CSC data structure and evaluated on a benchmark suite of 11 sparse matrices ranging from $n=4$ to $n=27{,}770$.
+We presented a multi-stage method for reordering Design Structure Matrices to minimize feed-back marks and total feed-back distance. The approach proceeds through six stages: CSC storage, SCC decomposition, topological block ordering, intra-block tearing via the greedy Algorithm~GR, bandwidth reduction using reverse Cuthill-McKee ordering, and adjacent-swap refinement. Two classical SCC algorithms: Tarjan's and Kosaraju-Sharir---were implemented over the CSC data structure and evaluated on a benchmark suite of 10 sparse matrices ranging from $n=11$ to $n=27{,}770$.
 
 Our numerical experiments demonstrate that the full pipeline achieves an average FBM reduction of 76.50\% and an average TFBD reduction of 85.95\% relative to the baseline ordering. Each stage contributes meaningfully: topological block ordering alone accounts for roughly 60\% of the FBM reduction on average, tearing drives additional gain, and banding supplies final refinement, particularly in diagonal compactness. Both SCC algorithms produce identical decompositions, with Tarjan's algorithm running approximately $1.77\times$ faster than Kosaraju-Sharir in our experiments. Runtime's across the benchmark suite are consistent with the expected near-linear behavior for graph-traversal-based algorithms over sparse structures.
 
