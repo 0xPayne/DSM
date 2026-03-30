@@ -161,7 +161,7 @@ Over the years, several algorithmic approaches have been proposed in the literat
 
 When all information cycles are identified, the involved tasks are grouped together to be treated as a single representative block~\cite{Yassine2001AnIT}. Then the procedure restarts on the remaining tasks, which ultimately yields the block lower triangular form of the DSM.
 
-The remainder of this report is structured as follows: Section~\ref{sec:solution} describes CSC matrix data structure and the algorithms that were used to permute the DSM, including their asymptotic runtime and space complexities. Section~\ref{sec:results} presents the results of our numerical experiments on benchmark matrices in terms of solution quality and running time. Section~\ref{sec:conclusion} summarizes our findings and provides future research directions of this work.
+The remainder of this report is structured as follows: Section~\ref{sec:solution} describes CSC matrix data structure and the algorithms that were used to permute the DSM, including their asymptotic runtime and space complexities. Section~\ref{sec:results} presents the results of our numerical experiments on benchmark matrices in terms of solution quality and running time. Section~\ref{sec:conclusion} summarizes our findings and provides future research directions of this work. Finally, the \hyperref[sec:appendix]{Appendix} contains graphical representations of the matrices before and after partitioning.
 
 
 \section{Description of Solution}\label{sec:solution}
@@ -309,7 +309,7 @@ Figure~\ref{fig:fbm-stage} shows that \texttt{TopoOnly} already provides a subst
 
 The TFBD behavior in Figure~\ref{fig:tfbd-stage} adds further detail. On average, \texttt{TopoOnly} produces very strong TFBD reduction (86.56\%), and tearing may occasionally increase TFBD relative to \texttt{TopoOnly} while still remaining far better than baseline. This behavior is expected: tearing mainly targets feedback orientation inside SCCs and does not directly optimize global diagonal distance. Banding then recovers and improves local compactness, yielding the strongest final TFBD values in most cases.
 
-Table~\ref{tab:quality-sample} summarizes representative matrices from small, medium, and large scales. For \texttt{California}, FBM decreases from 6063 to 192 and TFBD from 18,810,564 to 669. For the largest instance, \texttt{HEP-th-new}, FBM decreases from 104,435 to 8,281 and TFBD from 1,756,120,879 to 10,054,656. Even for structurally difficult instances such as \texttt{wb-cs-stanford}, the final stage reduces FBM by 57.59\% and TFBD by 79.71\%, which remains substantial in absolute terms.
+Table~\ref{tab:quality-sample} summarizes representative matrices from small, medium, and large scales. For \texttt{California}, FBM decreases from 6063 to 192 and TFBD from 18,810,564 to 669. For the largest instance, \texttt{HEP-th-new}, FBM decreases from 104,435 to 8,281 and TFBD from 1,756,120,879 to 10,054,656. Even for structurally difficult instances such as \texttt{wb-cs-stanford}, the final stage reduces FBM by 57.59\% and TFBD by 79.71\%, which remains substantial in absolute terms. Visualizations of selected benchmark matrices before and after the partitioning process are provided in the \hyperref[sec:appendix]{Appendix}.
 
 \begin{table}[H]
 \centering
@@ -371,7 +371,7 @@ Several directions for future work are worth considering. First, the tearing sta
 
 \cleardoublepage
 \phantomsection
-\section*{Appendix} % This removes the "A" from the page heading
+\section*{Appendix}\label{sec:appendix} % This removes the "A" from the page heading
 \addcontentsline{toc}{section}{Appendix} % This adds "Appendix" to the ToC without a number
 \markboth{Appendix}{Appendix} % Optional: Updates page headers if you use them
 
