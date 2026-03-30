@@ -166,15 +166,15 @@ The remainder of this report is structured as follows: Section~\ref{sec:solution
 
 \section{Description of Solution}\label{sec:solution}
 
-Not every DSM can be permuted to strict lower triangular form; when the underlying graph contains cycles, the best achievable result is the block lower triangular form (BLTF)~\cite{hossain_addendum}. We compute a BLTF of the input DSM in six stages: CSC storage, SCC decomposition, topological block ordering, tearing, banding, and permutation application.
+Not every DSM can be permuted to strict lower triangular form, when the underlying graph contains cycles, the best achievable result is the block lower triangular form (BLTF)~\cite{hossain_addendum}. We compute a BLTF of the input DSM in six stages: CSC storage, SCC decomposition, topological block ordering, tearing, banding, and permutation application.
 
 \subsection{Compressed Sparse Column Representation}
 
-Since DSMs are sparse ($\mathtt{nnz} \ll n^2$), we store the matrix in compressed sparse column (CSC) format~\cite{barrett1994templates,hossain_addendum} using a column pointer array $\texttt{col\_ptr}[0 \ldots n]$ and a row array $\texttt{row\_ind}[0 \ldots \mathtt{nnz}{-}1]$. The nonzero row indices of column~$j$ occupy $\texttt{row\_ind}[\texttt{col\_ptr}[j] \ldots \texttt{col\_ptr}[j{+}1){-}1]$. Since DSMs are binary, no value array is needed. Reading the DSM as a directed graph $G(A)$, column~$j$ lists the out-neighbours of vertex~$j$, so iterating them costs $O(\deg^+(j))$---the access pattern required by DFS. Total storage is $O(n + \mathtt{nnz})$. The transposed graph needed by Kosaraju-Sharir is also computed in $O(n + \mathtt{nnz})$ time.
+Since DSMs are sparse ($\mathtt{nnz} \ll n^2$), we store the matrix in compressed sparse column (CSC) format~\cite{barrett1994templates,hossain_addendum} using a column pointer array $\texttt{col\_ptr}[0 \ldots n]$ and a row array $\texttt{row\_ind}[0 \ldots \mathtt{nnz}{-}1]$. The nonzero row indices of column~$j$ occupy $\texttt{row\_ind}[\texttt{col\_ptr}[j] \ldots \texttt{col\_ptr}[j{+}1){-}1]$. Since DSMs are binary, no value array is needed. Reading the DSM as a directed graph $G(A)$, column~$j$ lists the out-neighbours of vertex~$j$, so iterating them costs $O(\deg^+(j))$, this is the access pattern required by DFS. Total storage is $O(n + \mathtt{nnz})$. The transposed graph needed by Kosaraju-Sharir is also computed in $O(n + \mathtt{nnz})$ time.
 
 \subsection{Strongly Connected Component Decomposition}\label{sec:scc}
 
-Each SCC in the directed graph of the DSM corresponds to a maximal set of mutually dependent tasks that cannot be decoupled by reordering alone. We implement two SCC algorithms, Tarjan's and Kosaraju-Sharir---which share an iterative DFS over the CSC structure, using a stack instead of recursion. Following Erickson's DFS framework with \textsc{PreVisit} and \textsc{PostVisit} hooks~\cite{erickson2019algorithms}, our implementation adds \textsc{PreEdge} and \textsc{PostEdge} callbacks to handle edge-level events.
+Each SCC in the directed graph of the DSM corresponds to a maximal set of mutually dependent tasks that cannot be decoupled by reordering alone. We implement two SCC algorithms, Tarjan's and Kosaraju-Sharir, which share an iterative DFS over the CSC structure, using a stack instead of recursion. Following Erickson's DFS framework with \textsc{PreVisit} and \textsc{PostVisit} hooks~\cite{erickson2019algorithms}, our implementation adds \textsc{PreEdge} and \textsc{PostEdge} callbacks to handle edge-level events.
 
 \paragraph{Tarjan's Algorithm.}
 Tarjan's algorithm~\cite{TARJANalgo} finds all SCCs in a single DFS pass. Each vertex~$v$ gets a starting time $v.\mathit{pre}$ and a value $\mathit{low}(v)$: the smallest starting time reachable from~$v$ by tree edges followed by at most one non-tree edge~\cite{erickson2019algorithms}. On first visit, $v$ is pushed onto a stack~$S$. When an edge $v \!\to\! w$ leads to a vertex still on~$S$, we set $\mathit{low}(v) \leftarrow \min\{\mathit{low}(v),\, w.\mathit{pre}\}$. After returning from a child~$w$, we propagate $\mathit{low}(v) \leftarrow \min\{\mathit{low}(v),\, \mathit{low}(w)\}$. When a vertex finishes with $\mathit{low}(v) = v.\mathit{pre}$, it is the root of a sink component~\cite{erickson2019algorithms}: all vertices above it on~$S$ are popped to form the SCC. Each vertex is pushed and popped exactly once, so the algorithm runs in $O(V + E)$ time and $O(V)$ auxiliary space~\cite{erickson2019algorithms,TARJANalgo}. Pseudocode is given in Erickson~\cite{erickson2019algorithms} (Figure~6.19).
@@ -277,8 +277,6 @@ Both the torn and RCM orderings are refined by a greedy adjacent-swap heuristic 
 
 The banded per-block orderings are concatenated in topological order to form a global permutation $\pi$ in $O(n)$ time. The symmetric permutation $A' = P^\top A P$ is applied in CSC format by computing $\pi^{-1}$ in $O(n)$ time, then remapping each edge $(i,j)$ to $(\pi^{-1}(i),\, \pi^{-1}(j))$ in $O(n + \mathtt{nnz})$ time. Row indices within each column are then sorted; if column~$j$ has $d_j$ entries, this step costs $O(\sum_j d_j \log d_j) \leq O(\mathtt{nnz}\log n)$ since $d_j \leq n$. The total is $O(n + \mathtt{nnz}\log n)$ time and $O(n + \mathtt{nnz})$ space. The feed-back mark count and total feed-back distance are computed on both the original and permuted DSMs in $O(\mathtt{nnz})$ time.
 
-\newpage
-
 \section{Numerical Results}\label{sec:results}
 
 This section evaluates the proposed DSM reordering method on the benchmark matrices included in the project repository. In particular, we measure both \emph{solution quality} and \emph{computational cost} across the stages introduced in Section~\ref{sec:solution}: (i) SCC decomposition and topological block ordering (\texttt{TopoOnly}), (ii) intra-block tearing, and (iii) intra-block banding refinement. The final reordered DSM is obtained through the symmetric permutation $A' = P^\top A P$, and all metrics are computed on $A'$.
@@ -295,7 +293,7 @@ The first observation is that the optimization stages consistently reduce feed-b
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\linewidth]{../out/plots/optimization_fbm_reduction.png}
+    \includegraphics[width=1\linewidth]{../out/plots/optimization_fbm_reduction.png}
     \caption{Percentage reduction in FBM at each stage relative to the baseline ordering.}
     \label{fig:fbm-stage}
 \end{figure}
@@ -304,7 +302,7 @@ Figure~\ref{fig:fbm-stage} shows that \texttt{TopoOnly} already provides a subst
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\linewidth]{../out/plots/optimization_tfbd_reduction.png}
+    \includegraphics[width=0.75\linewidth]{../out/plots/optimization_tfbd_reduction.png}
     \caption{Percentage reduction in TFBD at each stage relative to the baseline ordering.}
     \label{fig:tfbd-stage}
 \end{figure}
@@ -336,7 +334,7 @@ Runtime behavior is evaluated with the benchmark table and scaling plots generat
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\linewidth]{../out/plots/scaling.png}
+    \includegraphics[width=0.75\linewidth]{../out/plots/scaling.png}
     \caption{Log-log runtime scaling versus problem size $(V+E)$ for benchmarked algorithms.}
     \label{fig:scaling}
 \end{figure}
@@ -345,7 +343,7 @@ The scaling trends in Figure~\ref{fig:scaling} are compatible with the expected 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.78\linewidth]{../out/plots/optimization_stage_average.png}
+    \includegraphics[width=0.62\linewidth]{../out/plots/optimization_stage_average.png}
     \caption{Average FBM and TFBD reduction by stage over all benchmark matrices.}
     \label{fig:stage-avg}
 \end{figure}
@@ -354,7 +352,15 @@ Finally, Figure~\ref{fig:stage-avg} summarizes the global pattern: topological b
 
 \section{Conclusion}\label{sec:conclusion}
 
+We presented a multi-stage method for reordering Design Structure Matrices to minimize feed-back marks and total feed-back distance. The approach proceeds through six stages: CSC storage, SCC decomposition, topological block ordering, intra-block tearing via the greedy Algorithm~GR, bandwidth reduction using reverse Cuthill-McKee ordering, and adjacent-swap refinement. Two classical SCC algorithms: Tarjan's and Kosaraju-Sharir---were implemented over the CSC data structure and evaluated on a benchmark suite of 11 sparse matrices ranging from $n=4$ to $n=27{,}770$.
+
+Our numerical experiments demonstrate that the full pipeline achieves an average FBM reduction of 76.50\% and an average TFBD reduction of 85.95\% relative to the baseline ordering. Each stage contributes meaningfully: topological block ordering alone accounts for roughly 60\% of the FBM reduction on average, tearing drives additional gain, and banding supplies final refinement, particularly in diagonal compactness. Both SCC algorithms produce identical decompositions, with Tarjan's algorithm running approximately $1.77\times$ faster than Kosaraju-Sharir in our experiments. Runtime's across the benchmark suite are consistent with the expected near-linear behavior for graph-traversal-based algorithms over sparse structures.
+
+Several directions for future work are worth considering. First, the tearing stage currently relies on the greedy heuristic of Eades et~al., which does not guarantee a minimum feedback arc set, replacing it with a more sophisticated approach could yield further FBM reductions. Second, the current implementation is sequential; parallelizing the independent per-SCC tearing and banding stages would reduce wall-clock time on large matrices with many non-trivial SCCs. Finally, extending the framework to weighted DSMs, where marks carry numerical values reflecting the degree of coupling between tasks, would better capture real-world engineering dependencies and enable optimization of weighted feed-back cost rather than simple mark counts. 
+
 \section{Acknowledgments}\label{sec:acknowledgements}
+
+\subsection{Artifical Intelligence Disclosure}
 
 \newpage
 
