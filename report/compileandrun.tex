@@ -1,0 +1,106 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[top=1in, bottom=1in, left=0.9in, right=0.9in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage[T1]{fontenc}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+
+\lstset{
+	basicstyle=\ttfamily\small,
+	frame=none,
+	breaklines=true,
+	numbers=none,
+	tabsize=4,
+	showspaces=false,
+	showstringspaces=false,
+	captionpos=b,
+	xleftmargin=1.5cm
+}
+
+% Header and footer
+\pagestyle{fancy}
+\rhead{Simon Kraft, Joshua Payne, El Sall}
+\lhead{DSM Report}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{14.49998pt}
+
+\begin{document}
+
+\begin{titlepage}
+	\centering
+	\vspace*{2.0cm}
+	{\LARGE{Data Structures II}\par}
+	\vspace{0.5cm}
+	{\large CPSC 482 \par}
+	\vspace{0.5cm}
+	{\large Dr. Hossain \par}
+	\vspace{1.5cm}
+	{\huge\bfseries DSM Tutorial \\ Compiling and Running \par}
+	\vspace{1cm}
+	\begin{tabular}{lll}
+		\toprule
+		\textbf{Name} & \textbf{Email}  & \textbf{Student ID} \\
+		\midrule
+		Simon Kraft   & kraft@unbc.ca   & 230171256           \\
+		Joshua Payne  & paynej0@unbc.ca & 230152032           \\
+		El Sall       & esall@email.com & 230158722           \\
+		\bottomrule
+	\end{tabular}
+	\vspace{1cm}
+
+	{\Large March 30, 2026}
+\end{titlepage}
+
+\section*{Compiling and Running}
+
+\subsection*{Prerequisites}
+\begin{itemize}
+	\item C++17 compiler (\texttt{clang++} or \texttt{g++})
+	\item GNU Make
+	\item Python 3 with packages: \texttt{numpy}, \texttt{pandas}, \texttt{matplotlib}
+\end{itemize}
+
+\subsection*{Compiling}
+From the project root directory:
+\begin{lstlisting}
+mkdir out && make
+\end{lstlisting}
+This produces the executable \texttt{out/main}. To clean build artifacts:
+\begin{lstlisting}
+make clean
+\end{lstlisting}
+
+\subsection*{Running -- Interactive Mode}
+Run with no arguments to process a single matrix interactively:
+\begin{lstlisting}
+./out/main
+\end{lstlisting}
+You will be prompted to select a \texttt{.mtx} file from \texttt{data/}. The program runs the full optimization pipeline and prints the before/after metrics to the terminal.
+
+\subsection*{Running -- Benchmark Mode}
+Run with the \texttt{--bench} flag to process all benchmark matrices with timing:
+\begin{lstlisting}
+./out/main --bench
+\end{lstlisting}
+This generates CSV results and permuted matrices under \texttt{out/}.
+
+\subsection*{Generating Plots}
+After running the benchmark, you can run the plotting scripts:
+\begin{lstlisting}
+python3 scripts/plot_benchmarks.py
+python3 scripts/plot_optimization_metrics.py
+python3 scripts/generate_report_tables.py
+python3 scripts/plot_reordering.py
+\end{lstlisting}
+These read the CSV files from \texttt{out/} and produce figures and tables, also saved under \texttt{out/}.
+
+\end{document}
