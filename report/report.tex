@@ -295,29 +295,15 @@ This section evaluates the proposed DSM reordering method on the benchmark matri
 
 All experiments were executed with the benchmark mode of our implementation (\texttt{./out/main --bench}) using the same software and hardware environment for all matrices. The runs reported in this section were produced on an Apple M2 system with 8~GB RAM, compiled with Apple LLVM 17 under optimization flags (\texttt{-O3}, \texttt{-std=c++17}). For each timed algorithm, we use 2 warm-up runs and 5 timed runs, and report the mean, standard deviation, minimum, median, and maximum runtime in microseconds.
 
-The benchmark suite contains 10 sparse matrices with dimensions ranging from $n=11$ to $n=27{,}770$ and nonzero counts from $4$ to $352{,}807$. This span allows us to examine both small example instances and large, complex graphs that represent realistic dependency systems. In addition to timing, we export matrix-level quality statistics and stage-wise optimization metrics to \texttt{out/optimization\_metrics.csv}, from which the plots in Figures~\ref{fig:fbm-stage}--\ref{fig:stage-avg} are generated.
+The benchmark suite contains 10 sparse matrices with dimensions ranging from $n=11$ to $n=27{,}770$ and nonzero counts from $4$ to $352{,}807$. This span allows us to examine both small example instances and large, complex graphs that represent realistic dependency systems. In addition to timing, we export matrix-level quality statistics and stage-wise optimization metrics to \texttt{out/optimization\_metrics.csv}, from which the plots in Appendix Figures~\ref{app:fbm-stage}--\ref{app:stage-avg} are generated.
 
 \subsection{Stage-wise Optimization Quality}
 
 The first observation is that the optimization stages consistently reduce feed-back structure in most matrices, often by a large margin. Averaged across the complete benchmark suite, the final banded ordering reduces the number of feed-back marks by \textbf{76.50\%} and the total feed-back distance by \textbf{85.95\%} relative to the baseline ordering. These reductions show that the proposed sequence is effective not only at reducing the count of above-diagonal dependencies, but also at moving the remaining ones much closer to the diagonal.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{../out/plots/optimization_fbm_reduction.png}
-    \caption{Percentage reduction in FBM at each stage relative to the baseline ordering.}
-    \label{fig:fbm-stage}
-\end{figure}
+As shown in Appendix Figure~\ref{app:fbm-stage}, \texttt{TopoOnly} already provides a substantial structural benefit for many matrices (average FBM reduction: 60.16\%), while tearing accounts for the major additional gain (average FBM reduction after tearing: 76.47\%). Banding then provides a smaller but measurable final improvement (76.50\% overall), indicating that its contribution is mainly a local refinement step rather than the main source of global FBM reduction.
 
-Figure~\ref{fig:fbm-stage} shows that \texttt{TopoOnly} already provides a substantial structural benefit for many matrices (average FBM reduction: 60.16\%), while tearing accounts for the major additional gain (average FBM reduction after tearing: 76.47\%). Banding then provides a smaller but measurable final improvement (76.50\% overall), indicating that its contribution is mainly a local refinement step rather than the main source of global FBM reduction.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.75\linewidth]{../out/plots/optimization_tfbd_reduction.png}
-    \caption{Percentage reduction in TFBD at each stage relative to the baseline ordering.}
-    \label{fig:tfbd-stage}
-\end{figure}
-
-The TFBD behavior in Figure~\ref{fig:tfbd-stage} adds further detail. On average, \texttt{TopoOnly} produces very strong TFBD reduction (86.56\%), and tearing may occasionally increase TFBD relative to \texttt{TopoOnly} while still remaining far better than baseline. This behavior is expected: tearing mainly targets feedback orientation inside SCCs and does not directly optimize global diagonal distance. Banding then recovers and improves local compactness, yielding the strongest final TFBD values in most cases.
+The TFBD behavior in Appendix Figure~\ref{app:tfbd-stage} adds further detail. On average, \texttt{TopoOnly} produces very strong TFBD reduction (86.56\%), and tearing may occasionally increase TFBD relative to \texttt{TopoOnly} while still remaining far better than baseline. This behavior is expected: tearing mainly targets feedback orientation inside SCCs and does not directly optimize global diagonal distance. Banding then recovers and improves local compactness, yielding the strongest final TFBD values in most cases.
 
 Table~\ref{tab:quality-sample} summarizes representative matrices from small, medium, and large scales. For \texttt{California}, FBM decreases from 6063 to 192 and TFBD from 18,810,564 to 669. For the largest instance, \texttt{HEP-th-new}, FBM decreases from 104,435 to 8,281 and TFBD from 1,756,120,879 to 10,054,656. Even for structurally difficult instances such as \texttt{wb-cs-stanford}, the final stage reduces FBM by 57.59\% and TFBD by 79.71\%, which remains substantial in absolute terms. Visualizations of selected benchmark matrices before and after the partitioning process are provided in the \hyperref[sec:appendix]{Appendix}.
 
@@ -342,23 +328,9 @@ HEP-th-new        & 27770 & 352807  & 104435  & 8281    & 1756120879  & 10054656
 
 Runtime behavior is evaluated with the benchmark table and scaling plots generated from \texttt{out/benchmark.csv}. The measured results indicate that both SCC implementations are efficient at all tested scales, with Tarjan consistently faster than Sharir-Kosaraju on average in our experiments. Across the full benchmark set, mean runtime is approximately 560.76~$\mu$s for Tarjan and 992.26~$\mu$s for Kosaraju, i.e., a ratio of about 1.77$\times$ in favor of Tarjan.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.75\linewidth]{../out/plots/scaling.png}
-    \caption{Log-log runtime scaling versus problem size $(V+E)$ for benchmarked algorithms.}
-    \label{fig:scaling}
-\end{figure}
+The scaling trends in Appendix Figure~\ref{app:scaling} are compatible with the expected near-linear behavior for graph-traversal steps over sparse structures. As anticipated, stages with heavier local refinement logic (especially banding) incur higher absolute runtime than pure traversal-based stages, but this additional cost is justified by the quality gains shown earlier. In practical terms, the optimization trade-off is favorable: banding is computationally heavier, yet it delivers the final quality improvements needed for cleaner diagonal concentration and clearer block structure in the reordered DSM.
 
-The scaling trends in Figure~\ref{fig:scaling} are compatible with the expected near-linear behavior for graph-traversal steps over sparse structures. As anticipated, stages with heavier local refinement logic (especially banding) incur higher absolute runtime than pure traversal-based stages, but this additional cost is justified by the quality gains shown earlier. In practical terms, the optimization trade-off is favorable: banding is computationally heavier, yet it delivers the final quality improvements needed for cleaner diagonal concentration and clearer block structure in the reordered DSM.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.62\linewidth]{../out/plots/optimization_stage_average.png}
-    \caption{Average FBM and TFBD reduction by stage over all benchmark matrices.}
-    \label{fig:stage-avg}
-\end{figure}
-
-Finally, Figure~\ref{fig:stage-avg} summarizes the global pattern: topological block ordering provides strong early improvements, tearing drives the main FBM reduction within SCCs, and banding supplies consistent final polishing, particularly in TFBD compactness. Therefore, the empirical evidence supports using the full multi-stage method instead of any single-stage reordering strategy when the objective is robust quality improvement across different DSM instances.
+Finally, Appendix Figure~\ref{app:stage-avg} summarizes the global pattern: topological block ordering provides strong early improvements, tearing drives the main FBM reduction within SCCs, and banding supplies consistent final polishing, particularly in TFBD compactness. Therefore, the empirical evidence supports using the full multi-stage method instead of any single-stage reordering strategy when the objective is robust quality improvement across different DSM instances.
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -386,6 +358,34 @@ Several directions for future work are worth considering. First, the tearing sta
 \markboth{Appendix}{Appendix} % Optional: Updates page headers if you use them
 
 Figure~\ref{fig:partition1} and~\ref{fig:partition2} show four benchmark matrices before and after DSM partitioning. For each matrix, the orange shaded blocks on the permuted matrices indicate the strongly connected components. Furthermore, the statistics $|\text{FBM}|$ and $\text{TFBD}$ are reported for both the original and permuted matrix.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{../out/plots/optimization_fbm_reduction.png}
+    \caption{Percentage reduction in FBM at each stage relative to the baseline ordering.}
+    \label{app:fbm-stage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{../out/plots/optimization_tfbd_reduction.png}
+    \caption{Percentage reduction in TFBD at each stage relative to the baseline ordering.}
+    \label{app:tfbd-stage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\linewidth]{../out/plots/scaling.png}
+    \caption{Log-log runtime scaling versus problem size $(V+E)$ for benchmarked algorithms.}
+    \label{app:scaling}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.78\linewidth]{../out/plots/optimization_stage_average.png}
+    \caption{Average FBM and TFBD reduction by stage over all benchmark matrices.}
+    \label{app:stage-avg}
+\end{figure}
 
 \begin{figure}[H]
     \centering

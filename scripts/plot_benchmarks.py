@@ -40,13 +40,18 @@ COLORS = {
     "Kosaraju":     "#dc2626",
     "Condensation": "#16a34a",
     "TopoSort":     "#9333ea",
+    "Tearing":      "#ec4899",
+    "Banding":      "#f59e0b",
     "Permute":      "#ea580c",
+    "Verify":       "#14b8a6",
     "FBM-Count":    "#0891b2",
     "TFBD-Sum":     "#ca8a04",
 }
 
 def load_data(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
+    # Keep consistency with the 10-matrix benchmark set used in the report text.
+    df = df[df["matrix"] != "easy-example"].copy()
     df["ve_sum"] = df["n"] + df["nnz"]  # V + E for complexity analysis
     return df
 

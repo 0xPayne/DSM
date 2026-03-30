@@ -121,6 +121,8 @@ def main():
         sys.exit(1)
 
     df = pd.read_csv(csv_path)
+    # Keep optimization plots aligned with the 10-matrix benchmark set.
+    df = df[df["matrix"] != "easy-example"].copy()
     out_dir = os.path.join(project_root, "out", "plots")
     os.makedirs(out_dir, exist_ok=True)
 
