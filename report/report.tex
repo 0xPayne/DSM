@@ -13,6 +13,7 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage[nottoc]{tocbibind}
+\usepackage{subcaption}
 \usepackage{setspace}
 \usepackage[
 natbib,
@@ -282,9 +283,56 @@ The banded per-block orderings are concatenated in topological order to form a g
 
 \section{Conclusion}\label{sec:conclusion}
 
+\section{Acknowledgments}\label{sec:acknowledgements}
+
+\newpage
+
+\printbibliography[heading=bibintoc]
 
 
-\printbibliography
+\newpage
+
+\cleardoublepage
+\phantomsection
+\section*{Appendix} % This removes the "A" from the page heading
+\addcontentsline{toc}{section}{Appendix} % This adds "Appendix" to the ToC without a number
+\markboth{Appendix}{Appendix} % Optional: Updates page headers if you use them
+
+Figure~\ref{fig:partition1} and~\ref{fig:partition2} show four benchmark matrices before and after DSM partitioning. For each matrix, the orange shaded blocks on the permuted matrices indicate the strongly connected components. Furthermore, the statistics $|\text{FBM}|$ and $\text{TFBD}$ are reported for both the original and permuted matrix.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/California.png}
+    \end{subfigure}
+
+    \vspace{1em}
+
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/GD99_c.png}
+    \end{subfigure}
+	\caption{DSM partitioning results (1/2).} \label{fig:partition1}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/Tina_AskCal.png}
+    \end{subfigure}	
+
+	\vspace{1em}
+
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/wb-cs-stanford.png}
+    \end{subfigure}
+	\caption{DSM partitioning results (2/2).} \label{fig:partition2}
+\end{figure}
+
+\clearpage
 
 
 \end{document}
