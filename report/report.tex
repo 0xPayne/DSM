@@ -295,7 +295,7 @@ This section evaluates the proposed DSM reordering method on the benchmark matri
 
 \subsection{Experimental Setup}
 
-All experiments were executed with the benchmark mode of our implementation (\texttt{./out/main --bench}) using the same software and hardware environment for all matrices. The runs reported in this section were produced on an Apple M2 system with 8~GB RAM, compiled with Apple LLVM 17 under optimization flags (\texttt{-O3}, \texttt{-std=c++17}). For each timed algorithm, we use 2 warm-up runs and 5 timed runs, and report the mean, standard deviation, minimum, median, and maximum runtime in microseconds.
+All experiments were executed with the benchmark mode of our implementation (\texttt{./out/main --bench}) using the same software and hardware environment for all matrices. All runs reported in this section were executed on an Apple M2 system (8~GB RAM), compiled with Apple LLVM~17 under \texttt{-O3 -std=c++17}. The M2 cache hierarchy consists of a 64~KB L1 data cache, 128~KB L1 instruction cache, and 4~MB L2 cache per cluster. For each timed algorithm, we use 2 warm-up runs and 5 timed runs, and report the mean, standard deviation, minimum, median, and maximum runtime in microseconds.
 
 The benchmark suite contains 10 sparse matrices with dimensions ranging from $n=11$ to $n=27{,}770$ and nonzero counts from $4$ to $352{,}807$. This span allows us to examine both small example instances and large, complex graphs that represent realistic dependency systems. In addition to timing, we export matrix-level quality statistics and stage-wise optimization metrics to \texttt{out/optimization\_metrics.csv}, from which the plots in Appendix Figures~\ref{app:fbm-stage}--\ref{app:stage-avg} are generated.
 
