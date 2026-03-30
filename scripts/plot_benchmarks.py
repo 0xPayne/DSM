@@ -65,7 +65,7 @@ def plot_scaling(df: pd.DataFrame, out_dir: str):
     # Reference line: slope = 1 (linear)
     xr = np.array([df["ve_sum"].min(), df["ve_sum"].max()])
     scale = df.loc[df["ve_sum"].idxmax(), "mean_us"] / df["ve_sum"].max()
-    ax.loglog(xr, xr * scale, "--", color="#9ca3af", linewidth=1, label="O(V+E) ref")
+    ax.loglog(xr, xr * scale, "--", color="#0f766e", linewidth=1, label="O(V+E) ref")
 
     ax.set_xlabel("V + E  (vertices + edges)")
     ax.set_ylabel("Mean runtime (μs)")
