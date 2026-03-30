@@ -353,9 +353,22 @@ Several directions for future work are worth considering. First, the tearing sta
 
 \section{Acknowledgments}\label{sec:acknowledgements}
 
-\subsection{Artifical Intelligence Disclosure}
+\subsection{Artificial Intelligence Disclosure}
 
-We hereby declare that we made limited use of generative artificial intelligence during the preparation of this project. In particular, Claude (Anthropic) and ChatGPT (OpenAI) were used to aid understanding of the algorithms and concepts related to the topic, such as exploring literature and terminology of strongly connected component decomposition, tearing, and banding. For the implementation of the project and the writing of this report, no generative artificial intelligence tools were used, and we declare that all code and written content were produced independently by the authors.
+We hereby declare that we made limited use of generative artificial intelligence during the preparation of this project. Specifically, Claude (Opus 4.6 \& Sonnet 4.6) and ChatGPT (GPT-4o) for the following:
+
+\begin{enumerate}
+    \item \textbf{Understanding algorithms and terminology.} We asked questions to learn about topics related to DSM reordering. Prompts used:
+    \begin{itemize}
+        \item ``What are possible solutions for the feedback arc set problem used in DSM tearing, and what are some articles related to this problem?''
+        \item ``What is the connection between Reverse Cuthill-McKee algorithm and banding in DSMs?''
+        \item ``What is the difference between tearing and banding in the context of DSMs?''
+	\item ``Explain how the Eades-Lin-Smyth algorithm works with DSM tearing."
+    \end{itemize}
+\item \textbf{Writing Python plotting scripts.} We asked for help writing python scripts to produce the plots and tables in this report based on the output of our C\texttt{++} code, such as grouped bar charts comparing FBM and TFBD reductions. All generated code was reviewed and modified by the authors before use. 
+\end{enumerate}
+
+\noindent All C\texttt{++} algorithm code and report text were written by the authors without AI assistance.
 
 \newpage
 

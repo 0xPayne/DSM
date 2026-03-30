@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+Authors: Simon Kraft, Joshua Payne, El Sall
+CPSC 482 - Data Structures II
+
 Generate publication-quality plots from DSM benchmark CSV output.
 
 Usage:

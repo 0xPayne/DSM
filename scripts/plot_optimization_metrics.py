@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+Authors: Simon Kraft, Joshua Payne, El Sall
+CPSC 482 - Data Structures II
+
 Generate report-ready plots from out/optimization_metrics.csv.
 
 Usage:

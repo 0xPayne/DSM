@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+Authors: Simon Kraft, Joshua Payne, El Sall
+CPSC 482 - Data Structures II 
+
 Plot sparse matrices before and after permutation.
 
 Modes:
