@@ -332,6 +332,15 @@ The scaling trends in Appendix Figure~\ref{app:scaling} are compatible with the 
 
 Finally, Appendix Figure~\ref{app:stage-avg} summarizes the global pattern: topological block ordering provides strong early improvements, tearing drives the main FBM reduction within SCCs, and banding supplies consistent final polishing, particularly in TFBD compactness. Therefore, the empirical evidence supports using the full multi-stage method instead of any single-stage reordering strategy when the objective is robust quality improvement across different DSM instances.
 
+\subsection{Qualitative Results}
+
+To complement the quantitative metrics, Figures~\ref{fig:partition1} 
+and~\ref{fig:partition2} in the \hyperref[sec:appendix]{Appendix} show the sparsity structure of four benchmark matrices before and after DSM partitioning. For each matrix, the orange shaded blocks indicate the strongly connected components of the permuted DSM, and the statistics $|\text{FBM}|$ and $\text{TFBD}$ are reported for both the original and permuted matrix in the top-right corner of each plot.
+
+The four matrices were selected to illustrate a range of structural 
+characteristics. \texttt{California} is a large matrix ($n = 9{,}664$) that achieves a near-perfect partitioning, with no large SCC blocks visible and almost all feed-back marks eliminated. In contrast, \texttt{wb-cs-stanford} ($n = 9{,}914$) presents a more structurally difficult instance. Although the partitioning is effective overall, one large SCC block persists along the diagonal, retaining a significant number of feed-back marks with considerable distance from the diagonal, which explains the relatively high residual FBM and TFBD values for this matrix (see Table~\ref{tab:quality-sample}). In comparison the smaller matrix \texttt{Tina\_AskCal} ($n = 11$) shows a clean block structure with well-separated components, while \texttt{GD99\_c} ($n = 105$) is particularly illustrative in that its permuted form reveals a large number of trivial SCCs, that only contain one isolated node, and two-node SCCs. Furthermore, it contains two larger coupled bocks.
+
+
 \section{Conclusion}\label{sec:conclusion}
 
 We presented a multi-stage method for reordering Design Structure Matrices to minimize feed-back marks and total feed-back distance. The approach proceeds through six stages: CSC storage, SCC decomposition, topological block ordering, intra-block tearing via the greedy Algorithm~GR, bandwidth reduction using reverse Cuthill-McKee ordering, and adjacent-swap refinement. Two classical SCC algorithms: Tarjan's and Kosaraju-Sharir---were implemented over the CSC data structure and evaluated on a benchmark suite of 10 sparse matrices ranging from $n=11$ to $n=27{,}770$.
@@ -358,8 +367,6 @@ We hereby declare that we made limited use of generative artificial intelligence
 \section*{Appendix}\label{sec:appendix} % This removes the "A" from the page heading
 \addcontentsline{toc}{section}{Appendix} % This adds "Appendix" to the ToC without a number
 \markboth{Appendix}{Appendix} % Optional: Updates page headers if you use them
-
-Figure~\ref{fig:partition1} and~\ref{fig:partition2} show four benchmark matrices before and after DSM partitioning. For each matrix, the orange shaded blocks on the permuted matrices indicate the strongly connected components. Furthermore, the statistics $|\text{FBM}|$ and $\text{TFBD}$ are reported for both the original and permuted matrix.
 
 \begin{figure}[H]
     \centering
@@ -398,9 +405,9 @@ Figure~\ref{fig:partition1} and~\ref{fig:partition2} show four benchmark matrice
 
     \vspace{1em}
 
-    \begin{subfigure}{\textwidth}
+	\begin{subfigure}{\textwidth}
         \centering
-        \includegraphics[width=0.95\textwidth]{figures/GD99_c.png}
+        \includegraphics[width=0.95\textwidth]{figures/wb-cs-stanford.png}
     \end{subfigure}
 	\caption{DSM partitioning results (1/2).} \label{fig:partition1}
 \end{figure}
@@ -414,10 +421,12 @@ Figure~\ref{fig:partition1} and~\ref{fig:partition2} show four benchmark matrice
 
 	\vspace{1em}
 
-    \begin{subfigure}{\textwidth}
+	\begin{subfigure}{\textwidth}
         \centering
-        \includegraphics[width=0.95\textwidth]{figures/wb-cs-stanford.png}
+        \includegraphics[width=0.95\textwidth]{figures/GD99_c.png}
     \end{subfigure}
+
+    
 	\caption{DSM partitioning results (2/2).} \label{fig:partition2}
 \end{figure}
 
