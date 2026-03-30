@@ -197,8 +197,9 @@ The Kosaraju-Sharir algorithm~\cite{SHARIRalgo} uses two DFS passes. Phase~1 run
 The condensation $\mathit{scc}(G)$ contracts each SCC to a single vertex~\cite{erickson2019algorithms} and is stored as a new CSC matrix. Since it is always a DAG, we topologically sort it with Kahn's algorithm~\cite{kahn1962topological} to determine the block order. Both steps run in $O(k + m')$ time, where $k$ is the number of SCCs and $m'$ the number of inter-component edges~\cite{kahn1962topological}.
 
 \subsection{Tearing}\label{sec:tearing}
+\enlargethispage{\baselineskip}
 
-Tearing selects feed-back marks whose removal yields a lower triangular block~\cite{Yassine2001AnIT}. We approximate the minimum feedback arc set within each non-trivial SCC using Algorithm~GR of Eades et~al.~\cite{eades1993fast} (Algorithm~\ref{alg:gr}). For each SCC with $k$ vertices, the local subgraph is extracted into successor/predecessor lists with in-degree ($d^-$) and out-degree ($d^+$) arrays.
+Tearing selects feed-back marks whose removal yields a lower triangular block~\cite{Yassine2001AnIT}. We approximate the minimum feedback arc set within each non-trivial SCC using Algorithm~GR of Eades et~al.~\cite{eades1993fast} (Algorithm~\ref{alg:gr}). For each SCC with $k$ vertices, the subgraph is extracted into successor/predecessor lists with in-degree ($d^-$) and out-degree ($d^+$) arrays.
 
 \begin{algorithm}[H]
 	\caption{Algorithm GR~\cite{eades1993fast}}\label{alg:gr}
@@ -220,17 +221,18 @@ Tearing selects feed-back marks whose removal yields a lower triangular block~\c
 	\end{algorithmic}
 \end{algorithm}
 
-\noindent Edges that go backward in the returned ordering are the feedback arcs. Algorithm~GR runs in $O(m)$ time when the max-$\delta$ selection at line~10 uses a bucket structure~\cite{eades1993fast}; our implementation uses a linear scan instead, giving $O(k^2 + m)$ time and $O(k + m)$ space per SCC. Singleton SCCs are returned unchanged.
+\noindent Edges that go backward in the returned ordering are the feedback arcs. Algorithm~GR runs in $O(m)$ time when the max-$\delta$ selection at line~10 uses a bucket structure~\cite{eades1993fast}. However, our implementation uses a linear scan instead, giving $O(k^2 + m)$ time and $O(k + m)$ space per SCC. Singleton SCCs are returned unchanged.
 
 \subsection{Banding}
+\enlargethispage{\baselineskip}
 
 Banding reorders tasks within each non-trivial SCC ($|C| > 2$) to push feed-back marks closer to the diagonal, minimizing TFBD~\cite{hossain_addendum}.
 
 \paragraph{Reverse Cuthill-McKee Ordering.}
-The RCM algorithm was originally designed to reduce the bandwidth of symmetric sparse matrices~\cite{cuthill1969reducing}. Applied to an SCC subgraph, it concentrates nonzeros near the diagonal, which directly reduces TFBD. A pseudoperipheral starting vertex is selected via the George-Liu algorithm~\cite{georgeliu1979}, which runs successive BFS rounds. From this vertex, a Cuthill-McKee BFS~\cite{cuthill1969reducing} visits neighbours in ascending degree order; the result is then reversed to yield the RCM ordering~\cite{george1971computer}.
+The RCM algorithm was originally designed to reduce the bandwidth of symmetric sparse matrices~\cite{cuthill1969reducing}. Applied to an SCC subgraph, it moves nonzeros near the diagonal, which directly reduces TFBD. A pseudoperipheral starting vertex is selected via the George-Liu algorithm~\cite{georgeliu1979}, which runs BFS rounds. From this vertex, a Cuthill-McKee BFS~\cite{cuthill1969reducing} visits neighbours in ascending degree order, the result is then reversed to yield the RCM ordering~\cite{george1971computer}.
 
 \paragraph{Adjacent-Swap Refinement.}
-Both the torn and RCM orderings are refined by a greedy adjacent-swap heuristic (Algorithm~\ref{alg:swaprefine}). Each pass scans adjacent pairs and accepts a swap only if it strictly decreases TFBD without increasing FBM. The procedure halts when no improvement is found or after 20 passes.
+Both the torn and RCM orderings are further optimized by a greedy adjacent-swap heuristic (Algorithm~\ref{alg:swaprefine}). Each pass scans adjacent pairs and accepts a swap only if it strictly decreases TFBD without increasing FBM. The procedure stops when no improvement is found or after 20 passes.
 
 \begin{algorithm}[H]
 	\caption{Adjacent-Swap Refinement}\label{alg:swaprefine}
@@ -259,7 +261,7 @@ Both the torn and RCM orderings are refined by a greedy adjacent-swap heuristic 
 	\end{algorithmic}
 \end{algorithm}
 
-\noindent The refined ordering with fewer feed-back marks is kept; ties are broken by lower TFBD. If the unrefined RCM ordering increased FBM, it is discarded. Algorithm~\ref{alg:banding} summarizes the full procedure.
+\noindent The refined ordering with fewer feed-back marks is kept, ties are broken by lower TFBD. If the unrefined RCM ordering increased FBM, it is discarded. Algorithm~\ref{alg:banding} summarizes the full procedure.
 
 \begin{algorithm}[H]
 	\caption{Banding an SCC}\label{alg:banding}
@@ -281,11 +283,11 @@ Both the torn and RCM orderings are refined by a greedy adjacent-swap heuristic 
 	\end{algorithmic}
 \end{algorithm}
 
-\noindent RCM runs in $O(k + m)$ time~\cite{cuthill1969reducing,george1971computer}. Each refinement pass costs $O(k \cdot \bar{d})$ where $\bar{d}$ is the average degree; with at most 20 passes, overall banding requires $O(k + m)$ time and space per SCC.
+\noindent RCM runs in $O(k + m)$ time~\cite{cuthill1969reducing,george1971computer}. Overall, banding requires $O(k + m)$ time and space per SCC.
 
 \subsection{Permutation Application}
 
-The banded per-block orderings are concatenated in topological order to form a global permutation $\pi$ in $O(n)$ time. The symmetric permutation $A' = P^\top A P$ is applied in CSC format by computing $\pi^{-1}$ in $O(n)$ time, then remapping each edge $(i,j)$ to $(\pi^{-1}(i),\, \pi^{-1}(j))$ in $O(n + \mathtt{nnz})$ time. Row indices within each column are then sorted; if column~$j$ has $d_j$ entries, this step costs $O(\sum_j d_j \log d_j) \leq O(\mathtt{nnz}\log n)$ since $d_j \leq n$. The total is $O(n + \mathtt{nnz}\log n)$ time and $O(n + \mathtt{nnz})$ space. The feed-back mark count and total feed-back distance are computed on both the original and permuted DSMs in $O(\mathtt{nnz})$ time.
+The banded block orderings are concatenated in topological order to form a permutation $\pi$ in $O(n)$ time. The permutation $A' = P^\top A P$ is applied in CSC format by computing $\pi^{-1}$ in $O(n)$ time, then remapping each edge $(i,j)$ to $(\pi^{-1}(i),\, \pi^{-1}(j))$ in $O(n + \mathtt{nnz})$ time. Row indices within each column are then sorted, if column~$j$ has $d_j$ entries, this step costs $O(\sum_j d_j \log d_j) \leq O(\mathtt{nnz}\log n)$ since $d_j \leq n$. The total is $O(n + \mathtt{nnz}\log n)$ time and $O(n + \mathtt{nnz})$ space. The FBM count and total feed-back distance are computed on both the original and permuted DSMs in $O(\mathtt{nnz})$ time.
 
 \section{Numerical Results}\label{sec:results}
 
