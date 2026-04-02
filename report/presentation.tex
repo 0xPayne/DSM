@@ -116,7 +116,7 @@
       \]
       \begin{itemize}
         \item Rows and columns labeled by the same task list
-        \item Diagonal entries carry no inter-task meaning
+        \item Diagonal entries carry no dependency information.
         \item Equivalent to directed graph $G(A) = (V,E)$
       \end{itemize}
       \vspace{0.4em}
@@ -164,7 +164,7 @@
     \end{column}
     \begin{column}{0.48\textwidth}
       \begin{alertblock}{General case}
-        Achieve \highlight{Block Lower Triangular Form (BLTF)}: group cycle-participants into diagonal blocks and minimise feedback distance.
+        Achieve \highlight{Block Lower Triangular Form (BLTF)}: group mutually dependent tasks into diagonal blocks and push remaining feed-back marks close to the diagonal.
       \end{alertblock}
     \end{column}
   \end{columns}
@@ -210,7 +210,7 @@
         \begin{itemize}
           \item Column pointer array \texttt{col\_ptr}$[0\ldots n]$
           \item Row index array \texttt{row\_ind}$[0\ldots\text{nnz}-1]$
-          \item Storage: $O(n + \text{nnz})$
+          \item Storage: $\Theta(n + \text{nnz})$
           \item No value array needed (binary DSM)
         \end{itemize}
       \end{block}
@@ -218,7 +218,7 @@
     \begin{column}{0.48\textwidth}
       \begin{block}{Why CSC?}
         Column $j$ lists out-neighbours of vertex $j$,\\
-        giving $O(\deg^+(j))$ access — exactly the\\
+        giving $O(\deg^+(j))$ access, exactly the\\
         pattern required for DFS-based SCC algorithms.
       \end{block}
     \end{column}
@@ -260,33 +260,42 @@
 \begin{frame}{Tearing \& Banding}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
-      \begin{block}{Tearing (intra-block FBM reduction)}
+      \begin{block}{Tearing (reduces FBM within SCCs)}
         \begin{itemize}
-          \item Approximates the \textbf{minimum feedback arc set} within each non-trivial SCC
-          \item Uses \textbf{Algorithm~GR} (Eades et al., 1993): greedily removes sinks, then sources, then the vertex with maximum $\delta = d^+ - d^-$
-          \item Backward edges in the returned ordering are torn
-          \item $O(k^2 + m)$ per SCC (linear scan variant)
+          \item Reorder tasks within each SCC to reduce feed-back marks
+          \item Uses \textbf{Algorithm~GR}: greedily removes sinks, sources, then the vertex with the largest degree difference
+          \item Backward edges in the resulting ordering are the ``torn'' feedback arcs
         \end{itemize}
       \end{block}
     \end{column}
     \begin{column}{0.48\textwidth}
-      \begin{block}{Banding (TFBD reduction)}
+      \begin{block}{Banding (reduces TFBD within SCCs)}
         \begin{itemize}
+          \item Push remaining feed-back marks closer to the diagonal
           \item \textbf{Reverse Cuthill-McKee (RCM)}: concentrates nonzeros near diagonal
-          \item Pseudoperipheral start via George-Liu BFS
-          \item \textbf{Adjacent-swap refinement}: accepts swaps that decrease TFBD without increasing FBM; up to 20 passes
+          \item \textbf{Adjacent-swap refinement}: accepts swaps that lower TFBD without increasing FBM
           \item Best of torn + RCM orderings is kept
         \end{itemize}
       \end{block}
     \end{column}
   \end{columns}
+\end{frame}
 
-  \vspace{0.4em}
-  \begin{alertblock}{Benchmark data}
-    10 sparse matrices from the project repository, $n = 11$ to $27{,}770$, nnz $= 4$ to $352{,}807$.
-    Compiled with \texttt{-O3}, Apple LLVM 17, Apple M2 / 8\,GB RAM.
-    Each algorithm: 2 warm-up + 5 timed runs.
-  \end{alertblock}
+\begin{frame}{Experimental Setup}
+  \begin{block}{Benchmark suite}
+    \begin{itemize}
+      \item 10 sparse matrices from the project repository
+      \item Dimensions: $n = 11$ to $27{,}770$, nnz $= 4$ to $352{,}807$
+    \end{itemize}
+  \end{block}
+  \vspace{0.5em}
+  \begin{block}{Hardware \& methodology}
+    \begin{itemize}
+      \item Apple M2 / 8\,GB RAM, compiled with \texttt{-O3}, Apple LLVM 17
+      \item Each algorithm: 2 warm-up + 5 timed runs
+      \item Metrics: FBM count, TFBD, and runtime ($\mu$s)
+    \end{itemize}
+  \end{block}
 \end{frame}
 
 % ══════════════════════════════════════════════════════════════════════════════
