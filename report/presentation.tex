@@ -358,6 +358,21 @@
   \end{columns}
 \end{frame}
 
+
+\begin{frame}{FBM Reduction}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.85\textwidth]{../out/plots/optimization_fbm_reduction.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{TFBD Reduction}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.85\textwidth]{../out/plots/optimization_tfbd_reduction.png}
+  \end{figure}
+\end{frame}
+
 \begin{frame}{Runtime Comparison: Tarjan vs.\ Kosaraju-Sharir}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
@@ -397,29 +412,32 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Qualitative Results — Matrix Spy Plots}
-  \begin{columns}[T]
-    \begin{column}{0.48\textwidth}
-      \textbf{California} ($n = 9{,}664$)\\
-      Near-perfect partitioning: almost no residual FBM, no large SCC blocks visible.
+\begin{frame}{Runtime Comparison: Pipeline}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.75\textwidth]{../out/plots/scaling.png}
+  \end{figure}
+\end{frame}
 
-      \vspace{0.8em}
-      \textbf{wb-cs-stanford} ($n = 9{,}914$)\\
-      One large persistent SCC block retains significant FBM far from diagonal — explains high residual TFBD.
-    \end{column}
-    \begin{column}{0.48\textwidth}
-      \textbf{Tina\_AskCal} ($n = 1{,}023$)\\
-      Clean block structure with well-separated components after reordering.
+\begin{frame}{Qualitative Results: California}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/California.png}
+  \end{figure}
+\end{frame}
 
-      \vspace{0.8em}
-      \textbf{GD99\_c} ($n = 62$)\\
-      Illustrates the SCC structure clearly: many trivial singleton and two-node SCCs, plus two larger coupled blocks.
-    \end{column}
-  \end{columns}
-  \vspace{0.5em}
-  \begin{center}
-    \textit{(See appendix figures for full spy plot comparisons before and after partitioning.)}
-  \end{center}
+\begin{frame}{Qualitative Results: GD99\_c}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/GD99_c.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Qualitative Results: wb-cs-stanford}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/wb-cs-stanford.png}
+  \end{figure}
 \end{frame}
 
 % ══════════════════════════════════════════════════════════════════════════════
