@@ -320,7 +320,7 @@
 
 \begin{frame}{Stage-wise Quality Improvement}
   \begin{columns}[T]
-    \begin{column}{0.52\textwidth}
+    \begin{column}{0.42\textwidth}
       \textbf{Average reductions across 10 matrices:}
       \vspace{0.3em}
       \begin{tabular}{lcc}
@@ -328,9 +328,9 @@
         Stage & FBM $\downarrow$ & TFBD $\downarrow$ \\
         \midrule
         Baseline       & ---      & ---     \\
-        TopoOnly       & 60.16\%  & 86.56\% \\
-        + Tearing      & 76.47\%  & \textit{slight} $\uparrow$ \\
-        + Banding      & \highlight{76.50\%}  & \highlight{85.95\%} \\
+        TopoOnly       & 76.18\%  & 95.21\% \\
+        + Tearing      & 84.12\%  & 93.95\% \\
+        + Banding      & \highlight{84.15\%}  & \highlight{94.54\%} \\
         \bottomrule
       \end{tabular}
       \vspace{0.5em}
@@ -340,14 +340,14 @@
         \item Banding polishes TFBD without hurting FBM
       \end{itemize}
     \end{column}
-    \begin{column}{0.44\textwidth}
+    \begin{column}{0.55\textwidth}
       \begin{block}{Selected matrix results}
         \small
-        \begin{tabular}{lrr}
+        \begin{tabular}{lrrr}
           \toprule
-          Matrix & FBM$_0 \to$ FBM$_f$ & TFBD$_f$ \\
+          Matrix & FBM$_0 \to$ FBM$_f$ & TFBD$_0 \to$ TFBD$_f$ \\
           \midrule
-          Tina\_AskCal & $12 \to 4$       & 7 \\
+          Tina\_AskCal & $12 \to 4$       & $7$ \\
           California   & $6063 \to 192$   & 669 \\
           wb-cs-stanford & $20131 \to 8537$ & 1.78M \\
           HEP-th-new   & $104435 \to 8281$ & 10.1M \\
