@@ -449,9 +449,8 @@
         \begin{itemize}
           \item Implemented full 6-stage DSM reordering pipeline in C++ with CSC
           \item Both Tarjan and Kosaraju-Sharir SCC algorithms — identical decompositions
+          \item Tearing via \textbf{Algorithm~GR} (greedy FBM reduction), banding via \textbf{Reverse Cuthill-McKee} + adjacent-swap refinement (TFBD reduction)
           \item \highlight{84.15\% average FBM reduction}, \highlight{94.54\% average TFBD reduction} across 10 benchmark matrices
-          \item Tarjan $1.77\times$ faster than Kosaraju-Sharir
-          \item Runtime scales near-linearly with $V + E$
         \end{itemize}
       \end{block}
     \end{column}
@@ -472,24 +471,25 @@
 % ══════════════════════════════════════════════════════════════════════════════
 
 \begin{frame}{Acknowledgements \& Team Contributions}
+  \small
   \begin{block}{AI Disclosure}
-    Claude (Anthropic) and ChatGPT (OpenAI) were used to aid understanding of concepts and sourcing literature. 
+    \small Claude (Opus 4.6 \& Sonnet 4.6) and ChatGPT (GPT-4o) were used to understand algorithms/terminology and to write Python plotting scripts. All C\texttt{++} code and report text were written by the authors without AI assistance.
   \end{block}
 
-  \vspace{0.5em}
+  \vspace{0.3em}
   \begin{block}{Team Member Contributions}
-    \begin{tabular}{l p{0.72\textwidth}}
+    \small
+    \begin{tabular}{l p{0.70\textwidth}}
       \toprule
       \textbf{Member} & \textbf{Contribution} \\
       \midrule
-      Simon Kraft   & Implemented Tarjan's algorithm, Topological Sort. Wrote report introduction and abstract. \\
+      Simon Kraft   & Implemented Tarjan's algorithm, Topological Sort, and python scripts for original vs permuted DSM. Wrote report introduction and abstract. \\
       Joshua Payne  & Implemented Kosaraju-Sharir algorithm, tearing \& banding. Wrote report description of solution. \\
-      El Sall       & Implemented Permutation application and benchmark suite. Wrote report numerical results section. \\
+      El Sall       & Implemented permutation application, benchmark suite, python scripts for report figures. Wrote report numerical results section. \\
       \bottomrule
     \end{tabular}
   \end{block}
 
-  \vspace{0.3em}
   \centering
   \large \textbf{Thank you — questions welcome!}
 \end{frame}
