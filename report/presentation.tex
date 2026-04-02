@@ -57,7 +57,7 @@
 
 % ── Title info ─────────────────────────────────────────────────────────────────
 \title[DSM Partitioning]{DSM Partitioning}
-\subtitle{A Multi-Stage Pipeline for Reordering\\Dependency Structure Matrices}
+\subtitle{A Pipeline for Reordering \\ Dependency Structure Matrices}
 \author[Kraft, Payne, El Sall]{Simon Kraft \and Joshua Payne \and El Sall}
 \institute[UNBC]{CPSC 482/682 — Data Structures II\\University of Northern British Columbia}
 \date{April 7, 2026}
@@ -88,16 +88,15 @@
     \begin{column}{0.48\textwidth}
       \textbf{The challenge:}
       \begin{itemize}
-        \item Modern software \& engineering projects involve \highlight{hundreds of interdependent tasks}
-        \item Require coordination of large, multidisciplinary teams
-        \item Traditional tools (Gantt, CPM) model sequential \& parallel flows
-        \item \alertword{fail for feedback dependencies}, common in complex product development
+        \item Modern software \& engineering projects involve \highlight{hundreds to thousands of interdependent tasks} across diverse teams
+        \item Traditional tools (Gantt, CPM) handle sequential \& parallel flows well\ldots
+        \item \ldots but \alertword{fail for interdependent tasks} where outputs feed back as inputs
+        \item These feedback dependencies are common in complex product development
       \end{itemize}
     \end{column}
     \begin{column}{0.48\textwidth}
       \begin{block}{Goal}
-        Find a \textbf{task ordering} that minimises conflicting information flows to enable faster,
-        more predictable project execution.
+        Find a \textbf{task ordering} that minimises conflicts in information flow to enable faster, more predictable project execution.
       \end{block}
       \vspace{0.5em}
       \begin{alertblock}{Key observation}
@@ -433,9 +432,7 @@
 
 \begin{frame}{Acknowledgements \& Team Contributions}
   \begin{block}{AI Disclosure}
-    Claude (Anthropic) and ChatGPT (OpenAI) were used to aid understanding of algorithmic
-    concepts and literature (SCC decomposition, tearing, banding). No AI tool was used
-    to generate code or write report text.
+    Claude (Anthropic) and ChatGPT (OpenAI) were used to aid understanding of concepts and sourcing literature. 
   \end{block}
 
   \vspace{0.5em}
@@ -444,9 +441,9 @@
       \toprule
       \textbf{Member} & \textbf{Contribution} \\
       \midrule
-      Simon Kraft   & [e.g., implemented Tarjan's algorithm; wrote Sections 2.1--2.3] \\
-      Joshua Payne  & [e.g., implemented Kosaraju-Sharir; wrote Sections 2.4--2.5] \\
-      El Sall       & [e.g., implemented tearing \& banding; wrote Sections 3 \& 4] \\
+      Simon Kraft   & [placeholder] \\
+      Joshua Payne  & [placeholder] \\
+      El Sall       & [placeholder] \\
       \bottomrule
     \end{tabular}
   \end{block}
