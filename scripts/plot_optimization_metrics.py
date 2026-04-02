@@ -5,6 +5,10 @@ CPSC 482 - Data Structures II
 
 Generate report-ready plots from out/optimization_metrics.csv.
 
+Per-matrix grouped bars use the CSV columns *_gain_{topo,tearing,banding}_pct:
+each bar is cumulative reduction vs the baseline ordering (same definitions as
+benchmark export and optimization_summary.csv).
+
 Usage:
     python3 scripts/plot_optimization_metrics.py [path/to/optimization_metrics.csv]
 
@@ -42,14 +46,22 @@ STAGE_COLORS = {
 }
 
 
+def _cumulative_pct_cols(df: pd.DataFrame, kind: str):
+    """Return (topo%, tear%, band%) vs baseline from precomputed CSV columns."""
+    return (
+        df[f"{kind}_gain_topo_pct"].to_numpy(),
+        df[f"{kind}_gain_tearing_pct"].to_numpy(),
+        df[f"{kind}_gain_banding_pct"].to_numpy(),
+    )
+
+
 def grouped_reduction_plot(df: pd.DataFrame, metric_prefix: str, out_path: str, title: str, ylabel: str):
-    matrices = df.sort_values("n")["matrix"].tolist()
+    ordered = df.sort_values("n")
+    matrices = ordered["matrix"].tolist()
+    topo, tear, band = _cumulative_pct_cols(ordered, metric_prefix)
+
     x = np.arange(len(matrices))
     width = 0.25
-
-    topo = df.set_index("matrix")[f"{metric_prefix}_gain_topo_pct"].reindex(matrices).values
-    tear = df.set_index("matrix")[f"{metric_prefix}_gain_tearing_pct"].reindex(matrices).values
-    band = df.set_index("matrix")[f"{metric_prefix}_gain_banding_pct"].reindex(matrices).values
 
     fig, ax = plt.subplots(figsize=(12, 6))
     ax.bar(x - width, topo, width, label="TopoOnly", color=STAGE_COLORS["TopoOnly"])
@@ -67,17 +79,11 @@ def grouped_reduction_plot(df: pd.DataFrame, metric_prefix: str, out_path: str, 
 
 
 def cumulative_summary_plot(df: pd.DataFrame, out_path: str):
+    fbm_topo, fbm_tear, fbm_band = _cumulative_pct_cols(df, "fbm")
+    tfbd_topo, tfbd_tear, tfbd_band = _cumulative_pct_cols(df, "tfbd")
     summary = {
-        "FBM reduction (%)": [
-            df["fbm_gain_topo_pct"].mean(),
-            df["fbm_gain_tearing_pct"].mean(),
-            df["fbm_gain_banding_pct"].mean(),
-        ],
-        "TFBD reduction (%)": [
-            df["tfbd_gain_topo_pct"].mean(),
-            df["tfbd_gain_tearing_pct"].mean(),
-            df["tfbd_gain_banding_pct"].mean(),
-        ],
+        "FBM (%)": [fbm_topo.mean(), fbm_tear.mean(), fbm_band.mean()],
+        "TFBD (%)": [tfbd_topo.mean(), tfbd_tear.mean(), tfbd_band.mean()],
     }
 
     stages = ["TopoOnly", "Tearing", "Banding"]
@@ -85,12 +91,12 @@ def cumulative_summary_plot(df: pd.DataFrame, out_path: str):
     width = 0.35
 
     fig, ax = plt.subplots()
-    ax.bar(x - width / 2, summary["FBM reduction (%)"], width, label="FBM", color="#0891b2")
-    ax.bar(x + width / 2, summary["TFBD reduction (%)"], width, label="TFBD", color="#ca8a04")
+    ax.bar(x - width / 2, summary["FBM (%)"], width, label="FBM", color="#0891b2")
+    ax.bar(x + width / 2, summary["TFBD (%)"], width, label="TFBD", color="#ca8a04")
     ax.set_xticks(x)
     ax.set_xticklabels(stages)
-    ax.set_ylabel("Average reduction vs baseline (%)")
-    ax.set_title("Average Optimization Gain by Stage")
+    ax.set_ylabel("Mean reduction vs baseline (%)")
+    ax.set_title("Average reduction by stage (10 matrices)")
     ax.legend()
     fig.tight_layout()
     fig.savefig(out_path)
@@ -133,14 +139,14 @@ def main():
         df=df,
         metric_prefix="fbm",
         out_path=os.path.join(out_dir, "optimization_fbm_reduction.png"),
-        title="FBM Reduction by Reordering Stage",
+        title="FBM reduction by reordering stage",
         ylabel="Reduction vs baseline (%)",
     )
     grouped_reduction_plot(
         df=df,
         metric_prefix="tfbd",
         out_path=os.path.join(out_dir, "optimization_tfbd_reduction.png"),
-        title="TFBD Reduction by Reordering Stage",
+        title="TFBD reduction by reordering stage",
         ylabel="Reduction vs baseline (%)",
     )
     cumulative_summary_plot(

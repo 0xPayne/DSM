@@ -91,6 +91,9 @@ def main():
 
     bench_df = pd.read_csv(benchmark_csv)
     opt_df = pd.read_csv(optimization_csv)
+    # Align runtime averages with report/plots (10-matrix set).
+    bench_df = bench_df[bench_df["matrix"] != "easy-example"].copy()
+    opt_df = opt_df[opt_df["matrix"] != "easy-example"].copy()
 
     tables_dir = root / "out" / "tables"
 

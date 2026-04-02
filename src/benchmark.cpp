@@ -300,4 +300,74 @@ void writeOptimizationCSV(const std::string& path, const std::vector<Optimizatio
     std::cout << "Optimization CSV written to: " << path << "\n";
 }
 
+void writeOptimizationSummaryCSV(const std::string& path, const std::vector<OptimizationRecord>& records) {
+    std::vector<OptimizationRecord> filtered;
+    filtered.reserve(records.size());
+    for (const auto& r : records) {
+        if (r.matrix_name != "easy-example")
+            filtered.push_back(r);
+    }
+    if (filtered.empty()) {
+        std::cerr << "No optimization records for summary (after excluding easy-example).\n";
+        return;
+    }
+
+    double sum_fbm_topo_pct = 0, sum_fbm_tear_pct = 0, sum_fbm_band_pct = 0;
+    double sum_tfbd_topo_pct = 0, sum_tfbd_tear_pct = 0, sum_tfbd_band_pct = 0;
+    long long sum_fbm_base = 0, sum_fbm_topo = 0, sum_fbm_tear = 0, sum_fbm_band = 0;
+    long long sum_tfbd_base = 0, sum_tfbd_topo = 0, sum_tfbd_tear = 0, sum_tfbd_band = 0;
+
+    for (const auto& r : filtered) {
+        sum_fbm_topo_pct += reductionPercent(r.fbm_base, r.fbm_topo);
+        sum_fbm_tear_pct += reductionPercent(r.fbm_base, r.fbm_tearing);
+        sum_fbm_band_pct += reductionPercent(r.fbm_base, r.fbm_banding);
+        sum_tfbd_topo_pct += reductionPercent(r.tfbd_base, r.tfbd_topo);
+        sum_tfbd_tear_pct += reductionPercent(r.tfbd_base, r.tfbd_tearing);
+        sum_tfbd_band_pct += reductionPercent(r.tfbd_base, r.tfbd_banding);
+
+        sum_fbm_base += r.fbm_base;
+        sum_fbm_topo += r.fbm_topo;
+        sum_fbm_tear += r.fbm_tearing;
+        sum_fbm_band += r.fbm_banding;
+        sum_tfbd_base += r.tfbd_base;
+        sum_tfbd_topo += r.tfbd_topo;
+        sum_tfbd_tear += r.tfbd_tearing;
+        sum_tfbd_band += r.tfbd_banding;
+    }
+
+    const int n = static_cast<int>(filtered.size());
+    const double inv_n = 1.0 / static_cast<double>(n);
+
+    std::ofstream out(path);
+    if (!out) {
+        std::cerr << "Failed to open " << path << " for writing.\n";
+        return;
+    }
+
+    out << std::fixed << std::setprecision(4);
+    out << "metric,value\n";
+    out << "matrices_included," << n << "\n";
+    out << "mean_fbm_gain_topo_pct," << (sum_fbm_topo_pct * inv_n) << "\n";
+    out << "mean_fbm_gain_tearing_pct," << (sum_fbm_tear_pct * inv_n) << "\n";
+    out << "mean_fbm_gain_banding_pct," << (sum_fbm_band_pct * inv_n) << "\n";
+    out << "mean_tfbd_gain_topo_pct," << (sum_tfbd_topo_pct * inv_n) << "\n";
+    out << "mean_tfbd_gain_tearing_pct," << (sum_tfbd_tear_pct * inv_n) << "\n";
+    out << "mean_tfbd_gain_banding_pct," << (sum_tfbd_band_pct * inv_n) << "\n";
+    out << "macro_fbm_gain_topo_pct," << reductionPercent(sum_fbm_base, sum_fbm_topo) << "\n";
+    out << "macro_fbm_gain_tearing_pct," << reductionPercent(sum_fbm_base, sum_fbm_tear) << "\n";
+    out << "macro_fbm_gain_banding_pct," << reductionPercent(sum_fbm_base, sum_fbm_band) << "\n";
+    out << "macro_tfbd_gain_topo_pct," << reductionPercent(sum_tfbd_base, sum_tfbd_topo) << "\n";
+    out << "macro_tfbd_gain_tearing_pct," << reductionPercent(sum_tfbd_base, sum_tfbd_tear) << "\n";
+    out << "macro_tfbd_gain_banding_pct," << reductionPercent(sum_tfbd_base, sum_tfbd_band) << "\n";
+
+    std::cout << "Optimization summary CSV written to: " << path << "\n";
+    std::cout << "  (mean over " << n << " matrices, excluding easy-example)\n";
+    std::cout << "  Mean FBM%% vs baseline — topo / tear / band: "
+              << (sum_fbm_topo_pct * inv_n) << " / " << (sum_fbm_tear_pct * inv_n) << " / "
+              << (sum_fbm_band_pct * inv_n) << "\n";
+    std::cout << "  Mean TFBD%% vs baseline — topo / tear / band: "
+              << (sum_tfbd_topo_pct * inv_n) << " / " << (sum_tfbd_tear_pct * inv_n) << " / "
+              << (sum_tfbd_band_pct * inv_n) << "\n";
+}
+
 } // namespace SparseLib::Bench

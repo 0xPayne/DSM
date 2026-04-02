@@ -201,6 +201,11 @@ static void runBenchmark(const std::string &execPath) {
   fs::path optimizationPath =
       SparseLib::UX::projectRoot(execPath) / "out" / "optimization_metrics.csv";
   SparseLib::Bench::writeOptimizationCSV(optimizationPath.string(), optimization_records);
+
+  fs::path optimizationSummaryPath =
+      SparseLib::UX::projectRoot(execPath) / "out" / "optimization_summary.csv";
+  SparseLib::Bench::writeOptimizationSummaryCSV(optimizationSummaryPath.string(),
+                                                 optimization_records);
 }
 
 // Entry point

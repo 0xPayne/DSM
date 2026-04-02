@@ -110,4 +110,8 @@ void printTable(const std::vector<BenchmarkRecord>& records);
 void writeCSV(const std::string& path, const std::vector<BenchmarkRecord>& records);
 void writeOptimizationCSV(const std::string& path, const std::vector<OptimizationRecord>& records);
 
+// One-row summary: mean of per-matrix reduction % (excluding easy-example) plus
+// macro reduction from pooled baseline vs final counts (same filter).
+void writeOptimizationSummaryCSV(const std::string& path, const std::vector<OptimizationRecord>& records);
+
 } // namespace SparseLib::Bench
