@@ -3,32 +3,48 @@
 \documentclass[aspectratio=169]{beamer}
 
 % ── Theme & Colours ────────────────────────────────────────────────────────────
+% --- Theme Base ---
 \usetheme{Madrid}
 \usecolortheme{default}
 
-\definecolor{navyblue}{RGB}{28, 43, 74}
-\definecolor{teal}{RGB}{2, 128, 144}
-\definecolor{lightteal}{RGB}{2, 195, 154}
-\definecolor{orange}{RGB}{232, 122, 43}
-\definecolor{slategray}{RGB}{100, 116, 139}
+% --- UNBC Brand Colors ---
+\definecolor{UNBCGreen}{HTML}{004621}       % Official UNBC Dark Green
+\definecolor{UNBCGold}{HTML}{FFC20E}        % Official UNBC Gold
+\definecolor{UNBCLightGreen}{HTML}{2E7D4F}  % Lighter green for secondary elements
 \definecolor{offwhite}{RGB}{244, 246, 249}
+\definecolor{slategray}{HTML}{666666}
+\definecolor{navyblue}{RGB}{28, 43, 74}  % kept for backward compat in slide body
 
-\setbeamercolor{palette primary}{bg=navyblue, fg=white}
-\setbeamercolor{palette secondary}{bg=teal, fg=white}
-\setbeamercolor{palette tertiary}{bg=navyblue, fg=white}
-\setbeamercolor{palette quaternary}{bg=navyblue, fg=white}
-\setbeamercolor{structure}{fg=navyblue}
-\setbeamercolor{frametitle}{bg=navyblue, fg=white}
+% --- Palette (controls header/footer bar colors) ---
+\setbeamercolor{palette primary}{bg=UNBCGreen, fg=white}
+\setbeamercolor{palette secondary}{bg=UNBCLightGreen, fg=white}
+\setbeamercolor{palette tertiary}{bg=UNBCGreen, fg=white}
+\setbeamercolor{palette quaternary}{bg=UNBCGreen, fg=white}
+
+% --- Structure & Titles ---
+\setbeamercolor{structure}{fg=UNBCGreen}
+\setbeamercolor{frametitle}{bg=UNBCGreen, fg=white}
 \setbeamercolor{title}{fg=white}
-\setbeamercolor{subtitle}{fg=lightteal}
-\setbeamercolor{block title}{bg=teal, fg=white}
-\setbeamercolor{block body}{bg=offwhite, fg=black}
-\setbeamercolor{block title alerted}{bg=orange, fg=white}
-\setbeamercolor{block body alerted}{bg=offwhite, fg=black}
-\setbeamercolor{itemize item}{fg=teal}
-\setbeamercolor{itemize subitem}{fg=orange}
+\setbeamercolor{subtitle}{fg=UNBCGold}
+\setbeamercolor{section title}{fg=UNBCGreen}
 
+% --- Blocks ---
+\setbeamercolor{block title}{bg=UNBCGreen, fg=white}
+\setbeamercolor{block body}{bg=offwhite, fg=black}
+\setbeamercolor{block title alerted}{bg=UNBCGold, fg=black}  % Gold alerted block
+\setbeamercolor{block body alerted}{bg=offwhite, fg=black}
+
+% --- Lists ---
+\setbeamercolor{itemize item}{fg=UNBCGreen}
+\setbeamercolor{itemize subitem}{fg=UNBCGold}
+
+% --- Progress Bar (if using a theme that supports it) ---
+\setbeamercolor{progress bar}{fg=UNBCGold, bg=gray!30}
+
+% --- Remove default nav symbols ---
 \setbeamertemplate{navigation symbols}{}
+
+% --- Custom Footline ---
 \setbeamertemplate{footline}{%
   \leavevmode%
   \hbox{%
@@ -39,9 +55,10 @@
       \usebeamerfont{title in head/foot}DSM Partitioning — CPSC 482
     \end{beamercolorbox}%
     \begin{beamercolorbox}[wd=.33\paperwidth,ht=2.25ex,dp=1ex,right]{palette quaternary}%
-      \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{1em}
+      \usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{1em}%
       \insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
-    \end{beamercolorbox}}%
+    \end{beamercolorbox}%
+  }%
 }
 
 % ── Packages ──────────────────────────────────────────────────────────────────
