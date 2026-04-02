@@ -212,7 +212,6 @@
     \draw[arr] (tear) -- (band);
     \draw[arr] (band) -- (perm);
 
-    \node[below=0.35cm of csc,  font=\tiny, color=slategray] {$O(n+\text{nnz})$};
     \node[below=0.35cm of scc,  font=\tiny, color=slategray] {$O(V+E)$};
     \node[below=0.35cm of topo, font=\tiny, color=slategray] {$O(k+m')$};
     \node[below=0.35cm of tear, font=\tiny, color=slategray] {$O(k^2+m)$};
@@ -242,7 +241,7 @@
 \end{frame}
 
 \begin{frame}{SCC Decomposition}
-  Both algorithms implemented as \textbf{iterative DFS} over CSC, using an explicit stack (no recursion).
+  Both algorithms built on a shared iterative DFS with callback hooks, using an explicit stack (no recursion). 
 
   \vspace{0.4em}
   \begin{columns}[T]
@@ -278,19 +277,19 @@
     \begin{column}{0.48\textwidth}
       \begin{block}{Tearing (reduces FBM within SCCs)}
         \begin{itemize}
-          \item Reorder tasks within each SCC to reduce feed-back marks
-          \item Uses \textbf{Algorithm~GR}: greedily removes sinks, sources, then the vertex with the largest degree difference
-          \item Backward edges in the resulting ordering are the ``torn'' feedback arcs
+          \item \textbf{Algorithm~GR} (Eades, Lin, Smyth):
+          \item Repeatedly peel sinks $\to$ append to back, sources $\to$ prepend to front
+          \item When neither exists, pick vertex with max $d^+ - d^-$ as a source
+          \item The resulting ordering defines which edges are feedback arcs (backward edges)
         \end{itemize}
       \end{block}
     \end{column}
     \begin{column}{0.48\textwidth}
       \begin{block}{Banding (reduces TFBD within SCCs)}
         \begin{itemize}
-          \item Push remaining feed-back marks closer to the diagonal
           \item \textbf{Reverse Cuthill-McKee (RCM)}: concentrates nonzeros near diagonal
           \item \textbf{Adjacent-swap refinement}: accepts swaps that lower TFBD without increasing FBM
-          \item Best of torn + RCM orderings is kept
+          \item Best of torn + RCM orderings kept
         \end{itemize}
       \end{block}
     \end{column}
@@ -407,7 +406,6 @@
           \bottomrule
         \end{tabular}
       \end{block}
-      Banding is the heaviest stage but delivers the final quality gains.
     \end{column}
   \end{columns}
 \end{frame}
@@ -480,13 +478,13 @@
 
   \vspace{0.5em}
   \begin{block}{Team Member Contributions}
-    \begin{tabular}{ll}
+    \begin{tabular}{l p{0.72\textwidth}}
       \toprule
       \textbf{Member} & \textbf{Contribution} \\
       \midrule
-      Simon Kraft   & [placeholder] \\
-      Joshua Payne  & [placeholder] \\
-      El Sall       & [placeholder] \\
+      Simon Kraft   & Implemented Tarjan's algorithm, Topological Sort. Wrote report introduction and abstract. \\
+      Joshua Payne  & Implemented Kosaraju-Sharir algorithm, tearing \& banding. Wrote report description of solution. \\
+      El Sall       & Implemented Permutation application and benchmark suite. Wrote report numerical results section. \\
       \bottomrule
     \end{tabular}
   \end{block}
