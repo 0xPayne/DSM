@@ -234,9 +234,8 @@
     \end{column}
     \begin{column}{0.48\textwidth}
       \begin{block}{Why CSC?}
-        Column $j$ lists out-neighbours of vertex $j$,\\
-        giving $O(\deg^+(j))$ access, exactly the\\
-        pattern required for DFS-based SCC algorithms.
+        Column $j$ gives the neighbours of vertex $j$\\
+        in $O(\deg(j))$ — ideal for DFS traversal.
       \end{block}
     \end{column}
   \end{columns}
@@ -308,9 +307,9 @@
   \vspace{0.5em}
   \begin{block}{Hardware \& methodology}
     \begin{itemize}
-      \item Apple M2 / 8\,GB RAM, compiled with \texttt{-O3}, Apple LLVM 17
+      \item Apple M2 / 8\,GB RAM (L1d 64\,KB, L1i 128\,KB, L2 4\,MB), compiled with \texttt{-O3}, Apple LLVM 17
       \item Each algorithm: 2 warm-up + 5 timed runs
-      \item Metrics: FBM count, TFBD, and runtime ($\mu$s)
+      \item Metrics: FBM count, TFBD, and mean runtime ($\mu$s)
     \end{itemize}
   \end{block}
 \end{frame}
