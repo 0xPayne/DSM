@@ -2,6 +2,12 @@
 
 **CPSC 482 -- Data Structures II, University of Northern British Columbia**
 
+## Authors
+
+- **Simon Kraft** -- University of Bonn / UNBC
+- **Joshua Payne** -- UNBC
+- **El Sall** -- UNBC
+
 ## Overview
 
 Large-scale engineering and software projects involve hundreds or thousands of interdependent tasks. A Design Structure Matrix (DSM) is a square binary matrix where entry (i, j) = 1 indicates that task i depends on task j. Dependencies fall into three categories:
@@ -118,12 +124,6 @@ python3 scripts/plot_reordering.py --compare California EPA EVA GD98_a GD99_c Gl
 │   └── figures/     # Original vs. permuted matrix plots
 └── out/             # Build artifacts, CSVs, and generated plots
 ```
-
-## Authors
-
-- **Simon Kraft** -- University of Bonn / UNBC
-- **Joshua Payne** -- UNBC
-- **El Sall** -- UNBC
 
 ## License
 
