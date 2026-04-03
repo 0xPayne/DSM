@@ -24,10 +24,6 @@ struct TimingResult {
     double stddev_us = 0.0;
 };
 
-// Compiler optimization barrier: prevents the compiler from reordering
-// memory operations across this point. Same technique as Google Benchmark
-// and folly::doNotOptimizeAway. Ensures timing measurements aren't
-// polluted by instruction reordering.
 #if defined(__GNUC__) || defined(__clang__)
 inline void clobberMemory() { asm volatile("" : : : "memory"); }
 #else
@@ -110,8 +106,6 @@ void printTable(const std::vector<BenchmarkRecord>& records);
 void writeCSV(const std::string& path, const std::vector<BenchmarkRecord>& records);
 void writeOptimizationCSV(const std::string& path, const std::vector<OptimizationRecord>& records);
 
-// One-row summary: mean of per-matrix reduction % (excluding easy-example) plus
-// macro reduction from pooled baseline vs final counts (same filter).
 void writeOptimizationSummaryCSV(const std::string& path, const std::vector<OptimizationRecord>& records);
 
 } // namespace SparseLib::Bench

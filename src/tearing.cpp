@@ -28,39 +28,37 @@ tearAllSCCs(const std::vector<std::vector<int>> &sccs,
 }
 
 // Algorithm GR -- greedy FAS heuristic (Eades, Lin & Smyth, 1993)
-// Computes a vertex ordering that minimises leftward arcs in O(m) time.
 std::vector<int> elsOrder(const std::vector<int> &scc_vertices,
                           const Sparse::CSCMatrix &matrix) {
   int k = static_cast<int>(scc_vertices.size());
   if (k <= 1)
     return scc_vertices;
 
-  // Build local subgraph for the SCC (global IDs -> local indices 0..k-1)
+  // Build local subgraph for the SCC 
   std::unordered_map<int, int> g2l;
   g2l.reserve(k);
   for (int i = 0; i < k; ++i)
     g2l[scc_vertices[i]] = i;
 
-  // Adjacency lists and degree arrays for the local subgraph
   std::vector<std::vector<int>> succ(k);
   std::vector<std::vector<int>> pred(k);
   std::vector<int> out_deg(k, 0);
   std::vector<int> in_deg(k, 0);
 
   for (int i = 0; i < k; ++i) {
-    int u = scc_vertices[i]; // global ID of vertex i
+    int u = scc_vertices[i];
     for (int p = matrix.col_ptrs[u]; p < matrix.col_ptrs[u + 1]; ++p) {
-      int v = matrix.row_indices[p]; // global ID of neighbour
+      int v = matrix.row_indices[p]; 
       if (v == u)
-        continue; // self-loop -- skip
+        continue; 
       auto it = g2l.find(v);
       if (it == g2l.end())
-        continue; // arc leaves the SCC -- skip
+        continue;
       int li = i, lj = it->second;
-      succ[li].push_back(lj); // u -> v
-      pred[lj].push_back(li); // v <- u
-      ++out_deg[li];           // d+(u)++
-      ++in_deg[lj];            // d-(v)++
+      succ[li].push_back(lj); 
+      pred[lj].push_back(li);
+      ++out_deg[li];           
+      ++in_deg[lj];          
     }
   }
 
@@ -78,8 +76,8 @@ std::vector<int> elsOrder(const std::vector<int> &scc_vertices,
       source_q.push(i);
   }
 
-  std::vector<int> s_left;  // s_1
-  std::vector<int> s_right; // s_2
+  std::vector<int> s_left; 
+  std::vector<int> s_right; 
   s_left.reserve(k);
   s_right.reserve(k);
 
@@ -106,17 +104,15 @@ std::vector<int> elsOrder(const std::vector<int> &scc_vertices,
   // Main loop
   while (remaining > 0) {
 
-    // Remove sinks -> append to s_2
     while (!sink_q.empty()) {
       int u = sink_q.front();
       sink_q.pop();
       if (!alive[u])
-        continue; // already removed (stale queue entry)
+        continue; 
       remove_vertex(u);
       s_right.push_back(u);
     }
 
-    // Remove sources -> append to s_1
     while (!source_q.empty()) {
       int u = source_q.front();
       source_q.pop();
@@ -126,14 +122,13 @@ std::vector<int> elsOrder(const std::vector<int> &scc_vertices,
       s_left.push_back(u);
     }
 
-    // Choose max-delta vertex -> append to s_1
     if (remaining > 0) {
       int best = -1;
       int best_delta = INT_MIN;
       for (int i = 0; i < k; ++i) {
         if (!alive[i])
           continue;
-        int delta = out_deg[i] - in_deg[i]; // delta(u) = d+(u) - d-(u)
+        int delta = out_deg[i] - in_deg[i];
         if (delta > best_delta) {
           best_delta = delta;
           best = i;
@@ -144,7 +139,7 @@ std::vector<int> elsOrder(const std::vector<int> &scc_vertices,
     }
   }
 
-  // Build final sequence s = s_1 s_2 (map back to global IDs)
+  // Build final sequence s = s_1 s_2 
   std::vector<int> result;
   result.reserve(k);
   for (int u : s_left)

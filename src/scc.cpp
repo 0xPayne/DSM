@@ -42,7 +42,7 @@ void genericDFS(int start, const Sparse::CSCMatrix &matrix, PreVisit &pre_visit,
         pre_visit(v);
         stack.push_back({v, matrix.col_ptrs[v], u});
       }
-    } else {  // done with u, pop
+    } else {  
       int parent = f.parent;
       stack.pop_back();
 

@@ -8,7 +8,6 @@
 #include <sstream>
 #include <algorithm>
 #include <stdexcept>
-#include <iomanip>
 
 
 namespace SparseLib::IO {
@@ -37,8 +36,6 @@ namespace SparseLib::IO {
         duplets.resize(nnz);
         for (int i = 0; i < nnz; i++) {
             int r, c;
-            // Matrix Market files typically have a 3rd column for values,
-            // since this is valueless, we just read r and c and ignore the rest of the line.
             if (!(file >> r >> c)) throw std::runtime_error("Read error at line " + std::to_string(i));
             duplets[i] = {r - 1, c - 1}; // Convert to 0-based indexing
 
@@ -57,10 +54,9 @@ namespace SparseLib::IO {
         matrix.col_ptrs.assign(cols + 1, 0);
 
 
-        // Fill row indices and build the histogram for column pointers
         for (int i = 0; i < nnz; i++) {
-            matrix.row_indices[i] = duplets[i].first;  // Row
-            matrix.col_ptrs[duplets[i].second + 1]++;   // Column histogram
+            matrix.row_indices[i] = duplets[i].first;  
+            matrix.col_ptrs[duplets[i].second + 1]++;  
         }
 
         // Prefix sum

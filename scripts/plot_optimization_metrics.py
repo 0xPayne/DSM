@@ -3,11 +3,7 @@
 Authors: Simon Kraft, Joshua Payne, El Sall
 CPSC 482 - Data Structures II
 
-Generate report-ready plots from out/optimization_metrics.csv.
-
-Per-matrix grouped bars use the CSV columns *_gain_{topo,tearing,banding}_pct:
-each bar is cumulative reduction vs the baseline ordering (same definitions as
-benchmark export and optimization_summary.csv).
+Generate plots from out/optimization_metrics.csv.
 
 Usage:
     python3 scripts/plot_optimization_metrics.py [path/to/optimization_metrics.csv]
