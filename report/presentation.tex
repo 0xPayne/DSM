@@ -115,11 +115,6 @@
       \begin{block}{Goal}
         Find a \textbf{task ordering} that minimises conflicts in information flow to enable faster, more predictable project execution.
       \end{block}
-      \vspace{0.5em}
-      \begin{alertblock}{Key observation}
-        When task~$j$ supplies input to task~$i$ but is scheduled \emph{after} it, assumptions must
-        be made. If wrong, task~$i$ must be \textbf{re-executed}.
-      \end{alertblock}
     \end{column}
   \end{columns}
 \end{frame}
@@ -346,10 +341,10 @@
           \toprule
           Matrix & FBM$_0 \to$ FBM$_f$ & TFBD$_0 \to$ TFBD$_f$ \\
           \midrule
-          Tina\_AskCal & $12 \to 4$       & $7$ \\
-          California   & $6063 \to 192$   & 669 \\
-          wb-cs-stanford & $20131 \to 8537$ & 1.78M \\
-          HEP-th-new   & $104435 \to 8281$ & 10.1M \\
+          Tina\_AskCal & $12 \to 4$       & $32 \to 7$ \\
+          California   & $6063 \to 192$   &$18$M $\to 669$\\
+          wb-cs-stanford & $20131 \to 8537$ & $8.7$M $\to 1.78$M\\
+	  HEP-th-new   & $104435 \to 8281$ & $1.7$B $\to 10.1$M \\
           \bottomrule
         \end{tabular}
       \end{block}
