@@ -31,8 +31,6 @@ import matplotlib.patches as patches
 from pathlib import Path
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
-
 def load_permutation(path, n, fmt="new2old", one_based=False):
     perm = np.load(path) if path.endswith(".npy") else np.loadtxt(path, dtype=int)
     perm = perm.astype(int)
@@ -98,8 +96,6 @@ def find_permuted(matrix_path, repo_root, perm_arg):
         return candidate
     return None
 
-
-# ── drawing ───────────────────────────────────────────────────────────────────
 
 def draw_scc_boxes(ax, block_sizes,
                    facecolor="tab:orange", edgecolor="black",
@@ -178,8 +174,6 @@ def load_permuted_matrix(perm_path, A, n, perm_fmt, one_based):
         return A[perm, :][:, perm]
 
 
-# ── single matrix mode ────────────────────────────────────────────────────────
-
 def run_single(args, repo_root):
     matrix_path = Path(args.matrix)
     if not matrix_path.exists():
@@ -230,8 +224,6 @@ def run_single(args, repo_root):
         plt.show()
 
 
-# ── multi-matrix comparison mode ─────────────────────────────────────────────
-
 def run_compare(args, repo_root):
     output_dir = Path(args.output_dir) if args.output_dir else repo_root / "out" / "plots"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -278,8 +270,6 @@ def run_compare(args, repo_root):
         plt.close(fig)
         print(f"Saved → {out_path}")
 
-
-# ── entry point ───────────────────────────────────────────────────────────────
 
 def main():
     repo_root = Path(__file__).resolve().parent.parent

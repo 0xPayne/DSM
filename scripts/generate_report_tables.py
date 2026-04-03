@@ -3,7 +3,7 @@
 Authors: Simon Kraft, Joshua Payne, El Sall
 CPSC 482 - Data Structures II
 
-Build report-ready tables from benchmark and optimization CSV files.
+Build report tables from benchmark and optimization CSV files.
 
 Outputs:
   out/tables/problem_stats.md

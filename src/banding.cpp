@@ -11,27 +11,15 @@
 
 namespace SparseLib::Banding {
 
-// References:
-// [1] Cuthill & McKee, "Reducing the bandwidth of sparse symmetric matrices", ACM 1969
-// [2] George, "Computer implementation of the finite element method", PhD thesis, Stanford 1971
-// [3] George & Liu, "An implementation of a pseudoperipheral node finder", ACM TOMS 5(3), 1979
-// [4] Gibbs, Poole & Stockmeyer, "An algorithm for reducing the bandwidth and profile
-//     of a sparse matrix", SIAM J. Numer. Anal. 13(2), 1976
-// [5] Kernighan & Lin, "An efficient heuristic procedure for partitioning graphs",
-//     Bell Syst. Tech. J. 49(2), 1970
-
 namespace {
 
-// Local SCC subgraph: undirected adjacency + directed edge list
 struct LocalGraph {
-  int k;                                     // number of vertices in the SCC
-  std::unordered_map<int, int> g2l;          // global vertex ID -> local index
-  std::vector<int> globals;                  // local index -> global vertex ID
-  std::vector<std::vector<int>> adj;         // undirected adjacency (sorted)
-  std::vector<int> deg;                      // undirected degree
+  int k;                                  
+  std::unordered_map<int, int> g2l;    
+  std::vector<int> globals;                 
+  std::vector<std::vector<int>> adj;      
+  std::vector<int> deg;                     
 
-  // Directed edges within the SCC: (source_local, target_local).
-  // Needed for FBM / TFBD computation.
   struct Edge { int src, dst; };
   std::vector<Edge> directed_edges;
 };
@@ -46,7 +34,6 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
   for (int i = 0; i < G.k; ++i)
     G.g2l[scc_vertices[i]] = i;
 
-  // deduplicate undirected edges via sets
   std::vector<std::unordered_set<int>> adj_set(G.k);
 
   for (int i = 0; i < G.k; ++i) {
@@ -73,7 +60,7 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
     G.deg[i] = static_cast<int>(G.adj[i].size());
   }
 
-  // sort adj lists by degree ascending [1]
+  // sort adj lists by degree ascending 
   for (int i = 0; i < G.k; ++i) {
     std::sort(G.adj[i].begin(), G.adj[i].end(),
               [&](int a, int b) { return G.deg[a] < G.deg[b]; });
@@ -82,7 +69,6 @@ LocalGraph buildLocalGraph(const std::vector<int> &scc_vertices,
   return G;
 }
 
-// Pseudo-peripheral vertex finder [3]
 int findPseudoPeripheral(const LocalGraph &G) {
   auto bfs = [&](int start) -> std::pair<std::vector<int>, int> {
     std::vector<int> dist(G.k, -1);
@@ -110,15 +96,14 @@ int findPseudoPeripheral(const LocalGraph &G) {
     return {last_level, max_dist};
   };
 
-  int current = 0; // start from local vertex 0
+  int current = 0; 
   int prev_ecc = -1;
 
   for (int round = 0; round < 5; ++round) {
     auto [last_level, ecc] = bfs(current);
     if (ecc <= prev_ecc)
-      break; // converged
+      break; 
     prev_ecc = ecc;
-    // pick min-degree vertex from last level [3]
     int best = last_level[0];
     for (int v : last_level)
       if (G.deg[v] < G.deg[best])
@@ -129,7 +114,7 @@ int findPseudoPeripheral(const LocalGraph &G) {
   return current;
 }
 
-// Reverse Cuthill-McKee (RCM) ordering [1, 2, 4]
+// Reverse Cuthill-McKee (RCM)
 std::vector<int> rcmOrder(const LocalGraph &G) {
   int start = findPseudoPeripheral(G);
 
@@ -146,7 +131,6 @@ std::vector<int> rcmOrder(const LocalGraph &G) {
     q.pop();
     order.push_back(u);
 
-    // enqueue unvisited neighbours (already sorted by degree)
     for (int v : G.adj[u]) {
       if (!visited[v]) {
         visited[v] = true;
@@ -155,13 +139,11 @@ std::vector<int> rcmOrder(const LocalGraph &G) {
     }
   }
 
-  // catch any disconnected vertices
   for (int i = 0; i < G.k; ++i) {
     if (!visited[i])
       order.push_back(i);
   }
 
-  // reverse for RCM [2]
   std::reverse(order.begin(), order.end());
 
   return order;
@@ -183,7 +165,7 @@ Metrics localMetrics(const std::vector<int> &order,
   for (const auto &e : edges) {
     int p_src = pos[e.src];
     int p_dst = pos[e.dst];
-    if (p_dst < p_src) { // feedback mark
+    if (p_dst < p_src) { 
       ++m.fbm;
       m.tfbd += p_src - p_dst;
     }
@@ -191,7 +173,7 @@ Metrics localMetrics(const std::vector<int> &order,
   return m;
 }
 
-// Adjacent-swap hill climbing on TFBD [5]
+// Adjacent-swap hill climbing 
 std::vector<int>
 localRefine(const std::vector<int> &initial_order,
             const std::vector<LocalGraph::Edge> &edges, int k,
@@ -216,7 +198,6 @@ localRefine(const std::vector<int> &initial_order,
       int a = order[i];
       int b = order[i + 1];
 
-      // compute delta if we swap a and b
       int delta_fbm = 0;
       long long delta_tfbd = 0;
 
@@ -225,22 +206,18 @@ localRefine(const std::vector<int> &initial_order,
           int s = edges[ei].src;
           int d = edges[ei].dst;
 
-          // skip a-b edge, handled below
           if ((s == a && d == b) || (s == b && d == a))
             continue;
 
           int ps_old = pos[s];
           int pd_old = pos[d];
 
-          // new positions after swap
           int ps_new = (s == a) ? i + 1 : (s == b) ? i : ps_old;
           int pd_new = (d == a) ? i + 1 : (d == b) ? i : pd_old;
 
-          // old contribution
           bool fbm_old = (pd_old < ps_old);
           long long dist_old = fbm_old ? (ps_old - pd_old) : 0;
 
-          // new contribution
           bool fbm_new = (pd_new < ps_new);
           long long dist_new = fbm_new ? (ps_new - pd_new) : 0;
 
@@ -256,7 +233,6 @@ localRefine(const std::vector<int> &initial_order,
       process_edges(a);
       process_edges(b);
 
-      // handle direct a-b edge(s)
       for (int ei : incident[a]) {
         int s = edges[ei].src;
         int d = edges[ei].dst;
@@ -280,7 +256,6 @@ localRefine(const std::vector<int> &initial_order,
         delta_tfbd += dist_new - dist_old;
       }
 
-      // accept if TFBD improves and FBM doesn't worsen
       if (delta_tfbd < 0 && delta_fbm <= 0) {
         std::swap(order[i], order[i + 1]);
         pos[a] = i + 1;
@@ -298,7 +273,6 @@ localRefine(const std::vector<int> &initial_order,
 
 } // anonymous namespace
 
-// Two-phase banding per SCC: Phase 1 = RCM [1,2,4], Phase 2 = hill climbing [5]
 std::vector<std::vector<int>>
 bandAllSCCs(const std::vector<std::vector<int>> &torn_sccs,
             const Sparse::CSCMatrix &matrix) {
@@ -308,24 +282,20 @@ bandAllSCCs(const std::vector<std::vector<int>> &torn_sccs,
   for (const auto &scc : torn_sccs) {
     int k = static_cast<int>(scc.size());
 
-    // Trivial SCCs: nothing to reorder.
+    // Trivial SCCs:
     if (k <= 2) {
       result.push_back(scc);
       continue;
     }
 
-    // Build local subgraph (undirected adjacency + directed edge list).
     LocalGraph G = buildLocalGraph(scc, matrix);
 
-    // Identity ordering (local index i is at position i) represents the
-    // incoming tearing ordering, since scc[i] = global vertex at position i.
     std::vector<int> torn_local(k);
     for (int i = 0; i < k; ++i)
       torn_local[i] = i;
 
     Metrics m_torn = localMetrics(torn_local, G.directed_edges, k);
 
-    // Phase 2a: Always refine the torn ordering as a baseline.
     std::vector<int> refined_torn =
         localRefine(torn_local, G.directed_edges, k);
     Metrics m_refined_torn =
@@ -357,13 +327,11 @@ bandAllSCCs(const std::vector<std::vector<int>> &torn_sccs,
       refined = std::move(refined_torn);
     }
 
-    // Map local indices back to global vertex IDs.
     std::vector<int> global_order;
     global_order.reserve(k);
     for (int li : refined)
       global_order.push_back(scc[li]);
 
-    // Output must be a permutation of the input SCC.
     assert(static_cast<int>(global_order.size()) == k);
 
     result.push_back(std::move(global_order));

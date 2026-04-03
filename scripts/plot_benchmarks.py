@@ -3,7 +3,7 @@
 Authors: Simon Kraft, Joshua Payne, El Sall
 CPSC 482 - Data Structures II
 
-Generate publication-quality plots from DSM benchmark CSV output.
+Generate plots from DSM benchmark CSV output.
 
 Usage:
     python3 scripts/plot_benchmarks.py [path/to/benchmark.csv]
@@ -19,9 +19,6 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
 
-# ---------------------------------------------------------------------------
-# Style: clean, publication-ready
-# ---------------------------------------------------------------------------
 plt.rcParams.update({
     "figure.figsize":    (10, 6),
     "figure.dpi":        150,
@@ -55,7 +52,7 @@ def load_data(csv_path: str) -> pd.DataFrame:
     df = pd.read_csv(csv_path)
     # Keep consistency with the 10-matrix benchmark set used in the report text.
     df = df[df["matrix"] != "easy-example"].copy()
-    df["ve_sum"] = df["n"] + df["nnz"]  # V + E for complexity analysis
+    df["ve_sum"] = df["n"] + df["nnz"]  
     return df
 
 
