@@ -29,9 +29,21 @@ The full pipeline achieves an average **84% reduction in FBM** and **93% reducti
 
 ### Original vs. Partitioned Matrices
 
-| California (9664 vertices) | GD99_c (105 vertices) |
+| California (9664 vertices) | EPA (4772 vertices) |
 |---|---|
-| ![California](report/figures/California.png) | ![GD99_c](report/figures/GD99_c.png) |
+| ![California](report/figures/California.png) | ![EPA](report/figures/EPA.png) |
+
+| EVA (8497 vertices) | GD98_a (38 vertices) |
+|---|---|
+| ![EVA](report/figures/EVA.png) | ![GD98_a](report/figures/GD98_a.png) |
+
+| GD99_c (105 vertices) | GlossGT (72 vertices) |
+|---|---|
+| ![GD99_c](report/figures/GD99_c.png) | ![GlossGT](report/figures/GlossGT.png) |
+
+| HEP-th-new (27770 vertices) | HEP-th (27240 vertices) |
+|---|---|
+| ![HEP-th-new](report/figures/HEP-th-new.png) | ![HEP-th](report/figures/HEP-th.png) |
 
 | Tina_AskCal (11 vertices) | wb-cs-stanford (9914 vertices) |
 |---|---|
@@ -89,8 +101,8 @@ Requires Python 3 with `numpy`, `scipy`, and `matplotlib`.
 ```bash
 python3 scripts/plot_benchmarks.py
 python3 scripts/plot_optimization_metrics.py
-python3 scripts/plot_reordering.py --compare California GD99_c Tina_AskCal wb-cs-stanford \
-    --markersizes 0.25 1.0 5.0 0.25 --output-dir report/figures/
+python3 scripts/plot_reordering.py --compare California EPA EVA GD98_a GD99_c GlossGT HEP-th-new HEP-th Tina_AskCal wb-cs-stanford \
+    --markersizes 0.25 0.5 0.25 5.0 1.0 2.0 0.15 0.15 5.0 0.25 --output-dir report/figures/
 ```
 
 ## Project Structure
@@ -116,3 +128,7 @@ python3 scripts/plot_reordering.py --compare California GD99_c Tina_AskCal wb-cs
 ## License
 
 MIT
+
+---
+
+*Claude (Opus 4.6) assisted with sourcing literature for the tearing and banding stages and creating the plotting scripts.*
