@@ -31,27 +31,27 @@ The implementation is a six-stage optimization pipeline in C++17:
 
 ## Results
 
-The full pipeline achieves an average **84% reduction in FBM** and **93% reduction in TFBD** across 10 benchmark matrices ranging from 11 to 27,770 vertices.
+The full pipeline achieves an average **84% reduction in FBM** and **93% reduction in TFBD** across 10 benchmark matrices ranging from 11×11 to 27,770×27,770.
 
 ### Original vs. Partitioned Matrices
 
-| California (9664 vertices) | EPA (4772 vertices) |
+| California (9664×9664) | EPA (4772×4772) |
 |---|---|
 | ![California](report/figures/California.png) | ![EPA](report/figures/EPA.png) |
 
-| EVA (8497 vertices) | GD98_a (38 vertices) |
+| EVA (8497×8497) | GD98_a (38×38) |
 |---|---|
 | ![EVA](report/figures/EVA.png) | ![GD98_a](report/figures/GD98_a.png) |
 
-| GD99_c (105 vertices) | GlossGT (72 vertices) |
+| GD99_c (105×105) | GlossGT (72×72) |
 |---|---|
 | ![GD99_c](report/figures/GD99_c.png) | ![GlossGT](report/figures/GlossGT.png) |
 
-| HEP-th-new (27770 vertices) | HEP-th (27240 vertices) |
+| HEP-th-new (27770×27770) | HEP-th (27240×27240) |
 |---|---|
 | ![HEP-th-new](report/figures/HEP-th-new.png) | ![HEP-th](report/figures/HEP-th.png) |
 
-| Tina_AskCal (11 vertices) | wb-cs-stanford (9914 vertices) |
+| Tina_AskCal (11×11) | wb-cs-stanford (9914×9914) |
 |---|---|
 | ![Tina_AskCal](report/figures/Tina_AskCal.png) | ![wb-cs-stanford](report/figures/wb-cs-stanford.png) |
 
